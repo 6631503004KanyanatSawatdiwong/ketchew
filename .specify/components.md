@@ -1,20 +1,20 @@
-# Ketchew - Component Specifications
+# Ketchew - Component Specifications (Simplified Architecture)
 
 ## 1. Pomodoro Timer Component
 
-### State Management
-```typescript
-interface PomodoroState {
-  currentRound: number; // 1-4
-  phase: 'study' | 'shortBreak' | 'longBreak';
-  timeRemaining: number; // in seconds
-  isActive: boolean;
-  isPaused: boolean;
-  studyDuration: number; // default 25 minutes
-  shortBreakDuration: number; // default 5 minutes
-  longBreakDuration: number; // default 15 minutes
-  completedRounds: boolean[]; // [false, false, false, false]
-}
+### State Management (React State)
+```javascript
+const [pomodoroState, setPomodoroState] = useState({
+  currentRound: 1, // 1-4
+  phase: 'study', // 'study' | 'shortBreak' | 'longBreak'
+  timeRemaining: 1500, // in seconds (25 minutes)
+  isActive: false,
+  isPaused: false,
+  studyDuration: 25, // minutes
+  shortBreakDuration: 5, // minutes
+  longBreakDuration: 15, // minutes
+  completedRounds: [false, false, false, false]
+});
 ```
 
 ### Timer Logic
@@ -23,8 +23,24 @@ interface PomodoroState {
 - Auto-switch to break phase after study completion
 - Manual start required for each phase
 - Progress dots update based on completedRounds array
-- Sound alerts on phase transitions (if enabled)
-- Persistent state across browser refreshes (NFR05)
+- Sound alerts using Howler.js (if enabled)
+- Persistent state in LocalStorage across browser refreshes (NFR05)
+
+### Audio Integration (Howler.js)
+```javascript
+import { Howl } from 'howler';
+
+const timerAlert = new Howl({
+  src: ['/sounds/timer-complete.mp3'],
+  volume: 0.5
+});
+
+const backgroundSound = new Howl({
+  src: ['/sounds/nature-ambient.mp3'],
+  loop: true,
+  volume: 0.3
+});
+```
 
 ### UI Components
 - Timer display (MM:SS format)
@@ -35,46 +51,50 @@ interface PomodoroState {
 
 ## 2. Sidebar Navigation Component
 
-### Structure
-```typescript
-interface TabItem {
-  id: string;
-  label: string;
-  icon: React.ComponentType;
-  component: React.ComponentType;
-}
-
-const tabs: TabItem[] = [
+### Structure (React Component)
+```javascript
+const navigationTabs = [
   { id: 'background', label: 'Background', icon: PhotoIcon, component: BackgroundSelector },
   { id: 'sounds', label: 'Sounds', icon: SpeakerWaveIcon, component: SoundSelector },
   { id: 'timer', label: 'Timer', icon: ClockIcon, component: PomodoroTimer },
   { id: 'todo', label: 'To-Do', icon: ListBulletIcon, component: TodoList },
   { id: 'notes', label: 'Notes', icon: DocumentTextIcon, component: NotesEditor }
 ];
+
+const [activeTab, setActiveTab] = useState(null);
+const [isPopupOpen, setIsPopupOpen] = useState(false);
 ```
 
 ### Behavior
-- Fixed position on left side
-- Click opens popup overlay
-- Active tab highlighting
-- Smooth transitions
+- Fixed position with Tailwind CSS classes
+- Click opens popup overlay with selected component
+- Active tab highlighting with CSS classes
+- Smooth transitions using Tailwind animations
 
 ## 3. Todo List Component
 
-### Data Structure
-```typescript
-interface TodoItem {
-  id: string;
-  text: string;
-  completed: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
+### Data Structure (LocalStorage)
+```javascript
+const [todos, setTodos] = useState([]);
 
-interface TodoState {
-  items: TodoItem[];
-  filter: 'all' | 'active' | 'completed';
-}
+// LocalStorage operations
+const saveTodos = (todoList) => {
+  localStorage.setItem('ketchew_todos', JSON.stringify(todoList));
+};
+
+const loadTodos = () => {
+  const saved = localStorage.getItem('ketchew_todos');
+  return saved ? JSON.parse(saved) : [];
+};
+
+// Todo item structure
+const todoItem = {
+  id: crypto.randomUUID(),
+  text: 'Task description',
+  completed: false,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString()
+};
 ```
 
 ### Features
@@ -85,111 +105,202 @@ interface TodoState {
 - Filter options
 - Persistent storage
 
-## 4. Collaboration Component
+## 4. Collaboration Component (Memory-Based)
 
-### Session Management
-```typescript
-interface CollaborationSession {
-  id: string;
-  hostId: string;
-  participants: Participant[]; // Max 10 participants (NFR03)
-  sharedTimer: PomodoroState;
-  chat: ChatMessage[];
-  createdAt: Date;
-  maxParticipants: number; // Default: 10
-}
+### Session Management (Server Memory)
+```javascript
+// Server-side session storage (in memory)
+const activeSessions = new Map();
 
-interface Participant {
-  id: string;
-  name: string;
-  avatar: string;
-  isHost: boolean;
-  joinedAt: Date;
-}
-
-interface ChatMessage {
-  id: string;
-  participantId: string;
-  message: string; // Max 200 characters (NFR09)
-  timestamp: Date;
-  deliveryLatency?: number; // Track latency for NFR02
-}
+const sessionStructure = {
+  id: 'unique-session-id',
+  hostSocketId: 'socket-id',
+  participants: [
+    {
+      socketId: 'socket-id',
+      name: 'User Name',
+      avatar: 'avatar-url',
+      isHost: true,
+      joinedAt: new Date()
+    }
+  ],
+  sharedTimer: {
+    currentRound: 1,
+    phase: 'study',
+    timeRemaining: 1500,
+    isActive: false,
+    isPaused: false,
+    studyDuration: 25,
+    shortBreakDuration: 5,
+    longBreakDuration: 15,
+    completedRounds: [false, false, false, false]
+  },
+  chat: [], // Messages exist only in memory during session
+  createdAt: new Date(),
+  maxParticipants: 10
+};
 ```
 
-### Real-time Features
-- WebSocket connection for live updates
-- Timer synchronization
-- Chat messaging
-- Participant presence
-- Session invite links
+### Real-time Features (Socket.io)
+```javascript
+// Client-side Socket.io connection
+import io from 'socket.io-client';
 
-## 5. Customization Components
+const socket = io('ws://localhost:3001');
+
+// Join session
+socket.emit('join-session', {
+  sessionId: 'session-123',
+  name: 'User Name',
+  avatar: 'avatar-url'
+});
+
+// Timer synchronization
+socket.on('timer-updated', (timerState) => {
+  setPomodoroState(timerState);
+});
+
+// Chat messages (temporary, no persistence)
+socket.emit('chat-message', {
+  message: 'Hello everyone!', // Max 200 chars (NFR09)
+  timestamp: Date.now()
+});
+```
+
+## 5. Customization Components (LocalStorage)
 
 ### Background Selector
-```typescript
-interface BackgroundOption {
-  id: string;
-  name: string;
-  url: string;
-  thumbnail: string;
-  category: 'nature' | 'abstract' | 'minimalist';
-}
+```javascript
+const backgroundOptions = [
+  {
+    id: 'forest',
+    name: 'Forest Clearing',
+    url: '/images/backgrounds/forest.jpg',
+    thumbnail: '/images/backgrounds/thumbs/forest.jpg',
+    category: 'nature'
+  },
+  // ... more options
+];
+
+const [selectedBackground, setSelectedBackground] = useState('forest');
+
+// Save to LocalStorage
+const saveBackgroundPreference = (backgroundId) => {
+  localStorage.setItem('ketchew_background', backgroundId);
+  setSelectedBackground(backgroundId);
+};
 ```
 
-### Sound Selector
-```typescript
-interface SoundOption {
-  id: string;
-  name: string;
-  url: string;
-  category: 'nature' | 'ambient' | 'white-noise';
-  volume: number;
-  isPlaying: boolean;
-}
+### Sound Selector (Howler.js Integration)
+```javascript
+import { Howl } from 'howler';
+
+const soundOptions = [
+  {
+    id: 'rain',
+    name: 'Gentle Rain',
+    url: '/sounds/rain-ambient.mp3',
+    category: 'nature'
+  },
+  // ... more options
+];
+
+const [currentSound, setCurrentSound] = useState(null);
+const [volume, setVolume] = useState(50);
+const [isMuted, setIsMuted] = useState(false);
+
+// Sound management
+const playBackgroundSound = (soundId) => {
+  if (currentSound) {
+    currentSound.stop();
+  }
+  
+  const newSound = new Howl({
+    src: [`/sounds/${soundId}.mp3`],
+    loop: true,
+    volume: volume / 100
+  });
+  
+  newSound.play();
+  setCurrentSound(newSound);
+  
+  // Save preference
+  localStorage.setItem('ketchew_sound', soundId);
+  localStorage.setItem('ketchew_volume', volume);
+};
 ```
 
-## 6. Progress Tracking Component
+## 6. Progress Tracking Component (LocalStorage)
 
 ### Data Structure
-```typescript
-interface ProgressData {
-  date: string;
-  completedPomodoros: number;
-  totalStudyTime: number; // in minutes
-  totalBreakTime: number; // in minutes
-  tasksCompleted: number;
-}
+```javascript
+const [progressData, setProgressData] = useState({
+  dailyStats: [],
+  totalPomodoros: 0,
+  currentStreak: 0,
+  longestStreak: 0
+});
 
-interface ProgressState {
-  dailyStats: ProgressData[];
-  weeklyGoal: number;
-  streak: number;
-  totalPomodoros: number;
-}
+// LocalStorage operations
+const saveProgressData = (data) => {
+  localStorage.setItem('ketchew_progress', JSON.stringify(data));
+};
+
+const loadProgressData = () => {
+  const saved = localStorage.getItem('ketchew_progress');
+  return saved ? JSON.parse(saved) : {
+    dailyStats: [],
+    totalPomodoros: 0,
+    currentStreak: 0,
+    longestStreak: 0
+  };
+};
+
+// Daily stats structure
+const dailyStats = {
+  date: '2024-01-01',
+  completedPomodoros: 8,
+  totalStudyTime: 200, // minutes
+  totalBreakTime: 40, // minutes
+  tasksCompleted: 5
+};
 ```
 
 ### Features
-- Daily/weekly/monthly views
-- Goal setting and tracking
-- Streak counters
-- Export capabilities
-- Social sharing
+- Daily/weekly/monthly aggregation using JavaScript date calculations
+- Goal setting stored in LocalStorage
+- Streak calculations based on daily completion
+- Export functionality (JSON/CSV download)
+- Simple charts using Chart.js or similar lightweight library
 
-## 7. Notes Component
+## 7. Notes Component (SessionStorage)
 
 ### Simple Implementation
-```typescript
-interface NotesState {
-  content: string;
-  lastUpdated: Date;
-}
-```
+```javascript
+const [noteContent, setNoteContent] = useState('');
 
-### Features
-- Rich text editor (basic formatting)
-- Auto-save functionality
-- Session-based storage
-- Quick access from sidebar
+// Session-based storage (clears on browser close)
+const saveNote = (content) => {
+  sessionStorage.setItem('ketchew_notes', content);
+  setNoteContent(content);
+};
+
+const loadNote = () => {
+  const saved = sessionStorage.getItem('ketchew_notes');
+  return saved || '';
+};
+
+// Auto-save functionality
+useEffect(() => {
+  const autoSave = setTimeout(() => {
+    if (noteContent) {
+      saveNote(noteContent);
+    }
+  }, 1000); // Save after 1 second of inactivity
+
+  return () => clearTimeout(autoSave);
+}, [noteContent]);
+```
 
 ## 8. Authentication Component
 

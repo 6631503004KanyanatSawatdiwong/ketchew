@@ -128,24 +128,24 @@
 - **Dependencies**: FR02.1
 
 ### FR02.5: Task Data Persistence
-**Requirement**: System shall store task data persistently
-- **Description**: Tasks saved locally and synced to cloud when authenticated
+**Requirement**: System shall store task data persistently in LocalStorage only
+- **Description**: Tasks saved locally in browser storage without cloud sync
 - **Acceptance Criteria**:
-  - LocalStorage for offline access
-  - Cloud sync when user authenticated
-  - Conflict resolution for concurrent edits
-  - Data integrity validation
+  - LocalStorage for offline access and persistence
+  - Data survives browser refresh and restart
+  - No user accounts or cloud synchronization
+  - JSON serialization for data integrity
 - **Priority**: High
-- **Dependencies**: FR02.1, Authentication System
+- **Dependencies**: FR02.1
 
 ### FR02.6: Pomodoro Integration
 **Requirement**: System shall integrate with pomodoro timer functionality
-- **Description**: Track task completion during pomodoro sessions
+- **Description**: Track task completion during pomodoro sessions locally
 - **Acceptance Criteria**:
-  - Associate tasks with pomodoro sessions
+  - Associate tasks with pomodoro sessions in LocalStorage
   - Track time spent on specific tasks
   - Task completion notifications
-  - Productivity analytics integration
+  - Local productivity analytics integration
 - **Priority**: Medium
 - **Dependencies**: FR02.1, FR01.1, FR05.1
 
@@ -153,23 +153,25 @@
 
 ### FR03.1: Session Management
 **Requirement**: System shall provide collaborative session creation and sharing
-- **Description**: Generate unique session links for sharing
+- **Description**: Generate unique session links for sharing with memory-based storage
 - **Acceptance Criteria**:
-  - Unique session ID generation
+  - Unique session ID generation using crypto.randomUUID()
   - Shareable invite link creation
-  - Session expiration handling
+  - Session data stored in server memory only
   - Host designation and privileges
+  - No user authentication required
 - **Priority**: High
-- **Dependencies**: Authentication System
+- **Dependencies**: Socket.io Backend
 
 ### FR03.2: Participant Management
 **Requirement**: System shall handle user joining and identification
-- **Description**: Name and avatar selection for session participants
+- **Description**: Name and avatar selection for session participants (guest-only)
 - **Acceptance Criteria**:
   - Name input field (1-30 characters)
   - Avatar selection from preset options
-  - Guest user support (no registration required)
+  - Guest user support only (no registration required)
   - Participant list display
+  - Memory-based participant storage
 - **Priority**: High
 - **Dependencies**: FR03.1
 
@@ -275,24 +277,26 @@
 - **Dependencies**: FR04.1, FR04.3
 
 ### FR04.5: Preference Persistence
-**Requirement**: System shall maintain user customization settings
-- **Description**: Settings survive browser sessions and sync across devices
+**Requirement**: System shall maintain user customization settings in LocalStorage
+- **Description**: Settings persist in browser storage without cloud sync
 - **Acceptance Criteria**:
-  - LocalStorage for offline persistence
-  - Cloud sync for authenticated users
-  - Setting export/import functionality
+  - LocalStorage for persistent customization settings
+  - Settings survive browser refresh and restart
+  - No user accounts or cloud synchronization required
   - Default setting restoration option
+  - JSON serialization for data integrity
 - **Priority**: High
-- **Dependencies**: Authentication System, NFR05
+- **Dependencies**: LocalStorage API
 
 ### FR04.6: Theme System
-**Requirement**: System shall support theme switching
-- **Description**: Light and dark mode support
+**Requirement**: System shall support theme switching stored in LocalStorage
+- **Description**: Light and dark mode support with local persistence
 - **Acceptance Criteria**:
   - Light theme (default)
   - Dark theme option
-  - System theme detection
-  - Smooth transition between themes
+  - System theme detection capability
+  - Smooth transition between themes using Tailwind CSS
+  - Theme preference stored in LocalStorage
 - **Priority**: Low
 - **Dependencies**: None
 
@@ -365,15 +369,16 @@
 - **Dependencies**: FR05.2, FR05.3
 
 ### FR05.7: Data Storage and Sync
-**Requirement**: System shall store progress data persistently
-- **Description**: Local storage with cloud synchronization
+**Requirement**: System shall store progress data persistently in LocalStorage only
+- **Description**: Local storage without cloud synchronization
 - **Acceptance Criteria**:
-  - LocalStorage for offline access
-  - Cloud backup for authenticated users
-  - Cross-device synchronization
-  - Data conflict resolution
+  - LocalStorage for offline access and persistence
+  - Data survives browser refresh and restart
+  - No user accounts or cloud backup required
+  - Data export functionality for manual backup
+  - JSON serialization for data integrity
 - **Priority**: High
-- **Dependencies**: FR05.1, Authentication System, NFR05
+- **Dependencies**: FR05.1, LocalStorage API
 
 ## FR06: Notes and Documentation System
 

@@ -84,21 +84,27 @@ Ketchew is a web-based pomodoro timer platform that combines productivity tools 
 
 ## Technical Requirements
 
-### Frontend Framework
-- Modern web technologies (HTML5, CSS3, JavaScript)
-- Responsive design for desktop and mobile
-- Real-time capabilities for collaboration features
+### Frontend Stack
+- **React**: Component-based UI framework for interactive interfaces
+- **TailwindCSS**: Utility-first CSS framework for responsive design
+- **Howler.js**: Web audio library for background sounds and timer alerts
+- **LocalStorage**: Browser-based persistence for user data
 
-### Data Storage
-- **LocalStorage**: User preferences, pomodoro counts, notes
-- **Session Storage**: Temporary collaboration data
-- **Real-time Backend**: WebSocket connections for live features
+### Backend Stack
+- **Node.js**: JavaScript runtime for server-side development
+- **Express**: Web framework for API endpoints and server setup
+- **Socket.io**: Real-time bidirectional communication for collaboration
 
-### API Requirements
-- User authentication system
-- Session management for collaboration
-- Real-time messaging infrastructure
-- Social media integration APIs
+### Data Architecture
+- **Local-Only Storage**: 
+  - Tasks and todo items stored in LocalStorage
+  - Pomodoro counts and progress data in LocalStorage
+  - User preferences and customization settings in LocalStorage
+- **Temporary Session Data**:
+  - Collaboration nicknames and avatars stored in server memory
+  - Session state and timer synchronization in server memory
+  - Chat messages exist only during active sessions
+- **No Database Required**: Simplified architecture with browser and memory storage only
 
 ## User Experience Flow (FR Implementation)
 

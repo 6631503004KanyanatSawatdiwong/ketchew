@@ -1,296 +1,315 @@
-# Ketchew - API Specifications
+# Ketchew - API Specifications (Simplified Architecture)
 
-## Authentication Endpoints
+## Socket.io Real-time Events (No REST APIs)
 
-### POST /api/auth/signup
-Register a new user
-```json
-{
-  "email": "user@example.com",
-  "password": "securePassword",
-  "displayName": "John Doe"
-}
-```
+Since the application uses only LocalStorage for persistence and memory for collaboration, there are no traditional REST API endpoints. All communication is handled through Socket.io events.
 
-Response:
-```json
-{
-  "user": {
-    "id": "user_123",
-    "email": "user@example.com",
-    "displayName": "John Doe",
-    "avatar": "default_avatar_url"
-  },
-  "token": "jwt_token_here"
-}
-```
+## WebSocket Events (Socket.io)
 
-### POST /api/auth/signin
-Authenticate existing user
-```json
-{
-  "email": "user@example.com",
-  "password": "securePassword"
-}
-```
+### Connection Management
 
-### POST /api/auth/refresh
-Refresh authentication token
-
-### POST /api/auth/signout
-Sign out user
-
-## User Management Endpoints
-
-### GET /api/user/profile
-Get current user profile
-
-### PUT /api/user/profile
-Update user profile
-```json
-{
-  "displayName": "Updated Name",
-  "avatar": "new_avatar_url"
-}
-```
-
-### GET /api/user/preferences
-Get user preferences
-
-### PUT /api/user/preferences
-Update user preferences
-```json
-{
-  "theme": "dark",
-  "soundEnabled": true,
-  "defaultStudyDuration": 25,
-  "defaultShortBreakDuration": 5,
-  "defaultLongBreakDuration": 15,
-  "selectedBackground": "bg_forest",
-  "selectedSound": "rain_sounds"
-}
-```
-
-## Progress Tracking Endpoints
-
-### GET /api/progress/stats
-Get user progress statistics
-Query params: `?period=daily|weekly|monthly&date=2024-01-01`
-
-Response:
-```json
-{
-  "stats": [
-    {
-      "date": "2024-01-01",
-      "completedPomodoros": 8,
-      "totalStudyTime": 200,
-      "totalBreakTime": 40,
-      "tasksCompleted": 5
-    }
-  ],
-  "summary": {
-    "totalPomodoros": 156,
-    "currentStreak": 7,
-    "longestStreak": 21
-  }
-}
-```
-
-### POST /api/progress/pomodoro
-Record completed pomodoro
-```json
-{
-  "studyDuration": 25,
-  "breakDuration": 5,
-  "completedAt": "2024-01-01T10:30:00Z"
-}
-```
-
-### POST /api/progress/task
-Record completed task
-```json
-{
-  "taskId": "task_123",
-  "completedAt": "2024-01-01T10:30:00Z"
-}
-```
-
-## Collaboration Endpoints
-
-### POST /api/collaboration/session
-Create new collaboration session
-```json
-{
-  "name": "Study Group Session",
-  "isPublic": false
-}
-```
-
-Response:
-```json
-{
-  "sessionId": "session_123",
-  "inviteLink": "https://ketchew.com/join/session_123",
-  "hostId": "user_123"
-}
-```
-
-### POST /api/collaboration/join
-Join collaboration session (NFR03: Max 10 users per session)
-```json
-{
-  "sessionId": "session_123",
-  "participantName": "Jane Doe",
-  "avatar": "avatar_url"
-}
-```
-
-Response (if session full):
-```json
-{
-  "error": {
-    "code": "SESSION_FULL",
-    "message": "Session has reached maximum capacity of 10 users"
-  }
-}
-```
-
-### GET /api/collaboration/session/:id
-Get session details
-
-### DELETE /api/collaboration/session/:id
-End collaboration session (host only)
-
-## WebSocket Events
-
-### Connection
+#### Client → Server: Join Session
 ```javascript
 socket.emit('join-session', {
-  sessionId: 'session_123',
-  userId: 'user_123',
-  name: 'John Doe',
+  sessionId: 'session_123', // Optional, generates new if not provided
+  participantName: 'John Doe',
   avatar: 'avatar_url'
 });
 ```
 
-### Timer Synchronization
+#### Server → Client: Session Joined
 ```javascript
-// Host controls timer
+socket.on('session-joined', {
+  sessionId: 'session_123',
+  participantId: 'socket_id',
+  isHost: true,
+  participants: [
+    {
+      socketId: 'socket_id',
+      name: 'John Doe',
+      avatar: 'avatar_url',
+      isHost: true,
+      joinedAt: '2024-01-01T10:00:00Z'
+    }
+  ],
+  inviteLink: 'https://ketchew.com/join/session_123'
+});
+```
+
+#### Server → Client: Participant Joined
+```javascript
+socket.on('participant-joined', {
+  participant: {
+    socketId: 'new_socket_id',
+    name: 'Jane Doe',
+    avatar: 'avatar_url',
+    isHost: false,
+    joinedAt: '2024-01-01T10:05:00Z'
+  },
+  totalParticipants: 2
+});
+```
+
+### Timer Synchronization (Host Controls)
+
+#### Client → Server: Timer Control (Host Only)
+```javascript
+// Start timer
 socket.emit('timer-start', {
   sessionId: 'session_123',
   phase: 'study',
   duration: 1500 // 25 minutes in seconds
 });
 
-socket.emit('timer-pause', { sessionId: 'session_123' });
-socket.emit('timer-resume', { sessionId: 'session_123' });
-socket.emit('timer-reset', { sessionId: 'session_123' });
+// Pause timer
+socket.emit('timer-pause', {
+  sessionId: 'session_123'
+});
 
-// Broadcast to all participants
-socket.on('timer-updated', (timerState) => {
-  // Update local timer state
+// Resume timer
+socket.emit('timer-resume', {
+  sessionId: 'session_123'
+});
+
+// Reset timer
+socket.emit('timer-reset', {
+  sessionId: 'session_123'
+});
+```
+
+#### Server → All Clients: Timer State Update
+```javascript
+socket.on('timer-updated', {
+  currentRound: 1,
+  phase: 'study',
+  timeRemaining: 1485, // seconds
+  isActive: true,
+  isPaused: false,
+  studyDuration: 25,
+  shortBreakDuration: 5,
+  longBreakDuration: 15,
+  completedRounds: [false, false, false, false],
+  lastUpdated: '2024-01-01T10:00:15Z'
 });
 ```
 
 ### Chat Messages
 ```javascript
+// Client → Server: Send message
 socket.emit('chat-message', {
   sessionId: 'session_123',
   message: 'Let\'s focus for 25 minutes!', // Max 200 characters (NFR09)
   timestamp: Date.now()
 });
 
-socket.on('chat-message', (messageData) => {
-  // Display message in chat
-  // Latency target: ≤300ms (NFR02)
+// Server → All Clients: Message broadcast
+socket.on('chat-message', {
+  participantName: 'John Doe',
+  participantAvatar: 'avatar_url',
+  message: 'Let\'s focus for 25 minutes!',
+  timestamp: 1640995200000,
+  deliveryLatency: 150 // ms (target: ≤300ms per NFR02)
 });
 ```
 
-### Participant Management
+### Session Management
+
+#### Server → Client: Session Full Error
 ```javascript
-socket.on('participant-joined', (participant) => {
-  // Update participant list
-});
-
-socket.on('participant-left', (participantId) => {
-  // Remove from participant list
-});
-
-socket.on('session-ended', () => {
-  // Handle session termination
+socket.on('session-error', {
+  error: 'SESSION_FULL',
+  message: 'Session has reached maximum capacity of 10 users',
+  maxParticipants: 10,
+  currentParticipants: 10
 });
 ```
 
-## Content Endpoints
-
-### GET /api/content/backgrounds
-Get available background images
-```json
-{
-  "backgrounds": [
-    {
-      "id": "bg_forest",
-      "name": "Forest Clearing",
-      "url": "https://cdn.ketchew.com/bg/forest.jpg",
-      "thumbnail": "https://cdn.ketchew.com/bg/thumbs/forest.jpg",
-      "category": "nature"
-    }
-  ]
-}
+#### Client → Server: Leave Session
+```javascript
+socket.emit('leave-session', {
+  sessionId: 'session_123'
+});
 ```
 
-### GET /api/content/sounds
-Get available background sounds
-```json
-{
-  "sounds": [
-    {
-      "id": "rain_sounds",
-      "name": "Gentle Rain",
-      "url": "https://cdn.ketchew.com/audio/rain.mp3",
-      "category": "nature",
-      "duration": 600
-    }
-  ]
-}
+#### Server → All Clients: Participant Left
+```javascript
+socket.on('participant-left', {
+  participantName: 'Jane Doe',
+  remainingParticipants: 1
+});
 ```
 
-## Error Responses
+#### Server → All Clients: Session Ended
+```javascript
+socket.on('session-ended', {
+  reason: 'HOST_LEFT', // or 'ALL_PARTICIPANTS_LEFT'
+  timestamp: Date.now()
+});
+```
 
-### Standard Error Format
-```json
-{
-  "error": {
-    "code": "INVALID_CREDENTIALS",
-    "message": "Invalid email or password",
-    "details": {}
+## Server-Side Memory Structure
+
+### Active Sessions Storage
+```javascript
+// In-memory storage on server (no database)
+const activeSessions = new Map();
+
+// Session data structure
+const sessionData = {
+  id: 'session_123',
+  hostSocketId: 'socket_abc',
+  participants: new Map([
+    ['socket_abc', {
+      socketId: 'socket_abc',
+      name: 'John Doe',
+      avatar: 'avatar_1',
+      isHost: true,
+      joinedAt: new Date()
+    }]
+  ]),
+  sharedTimer: {
+    currentRound: 1,
+    phase: 'study',
+    timeRemaining: 1500,
+    isActive: false,
+    isPaused: false,
+    studyDuration: 25,
+    shortBreakDuration: 5,
+    longBreakDuration: 15,
+    completedRounds: [false, false, false, false],
+    lastUpdated: new Date()
+  },
+  chatHistory: [], // Temporary, cleared when session ends
+  createdAt: new Date(),
+  maxParticipants: 10
+};
+```
+
+## Error Handling
+
+### Connection Errors
+```javascript
+socket.on('connect_error', (error) => {
+  console.error('Connection failed:', error);
+  // Show user-friendly error message
+});
+
+socket.on('disconnect', (reason) => {
+  if (reason === 'io server disconnect') {
+    // Server disconnected the client, try to reconnect
+    socket.connect();
   }
-}
+});
 ```
 
-### Common Error Codes
-- `INVALID_CREDENTIALS` - Authentication failed
-- `SESSION_NOT_FOUND` - Collaboration session doesn't exist
-- `SESSION_FULL` - Maximum participants reached
-- `UNAUTHORIZED` - Action requires authentication
-- `FORBIDDEN` - User doesn't have permission
-- `VALIDATION_ERROR` - Request data validation failed
-- `RATE_LIMITED` - Too many requests
-
-## Rate Limiting
-
-- Authentication endpoints: 5 requests per minute
-- Progress tracking: 100 requests per hour
-- Chat messages: 60 messages per minute
-- General API: 1000 requests per hour
-
-## Response Headers
-
-All API responses include:
+### Session Errors
+```javascript
+socket.on('session-error', (error) => {
+  switch (error.code) {
+    case 'SESSION_NOT_FOUND':
+      // Redirect to home or show error
+      break;
+    case 'SESSION_FULL':
+      // Show capacity reached message
+      break;
+    case 'INVALID_SESSION_ID':
+      // Show invalid link message
+      break;
+    case 'HOST_REQUIRED':
+      // Action requires host privileges
+      break;
+  }
+});
 ```
-X-RateLimit-Limit: 1000
-X-RateLimit-Remaining: 999
-X-RateLimit-Reset: 1640995200
-Content-Type: application/json
+
+## Client-Side LocalStorage Operations
+
+### Timer State Persistence
+```javascript
+// Save timer state to LocalStorage
+const saveTimerState = (state) => {
+  localStorage.setItem('ketchew_timer', JSON.stringify({
+    ...state,
+    lastSaved: Date.now()
+  }));
+};
+
+// Load timer state from LocalStorage
+const loadTimerState = () => {
+  const saved = localStorage.getItem('ketchew_timer');
+  if (saved) {
+    const state = JSON.parse(saved);
+    // Check if state is still valid (not too old)
+    if (Date.now() - state.lastSaved < 24 * 60 * 60 * 1000) { // 24 hours
+      return state;
+    }
+  }
+  return getDefaultTimerState();
+};
 ```
+
+### User Preferences
+```javascript
+// Save preferences
+const savePreferences = (prefs) => {
+  localStorage.setItem('ketchew_preferences', JSON.stringify(prefs));
+};
+
+// Load preferences
+const loadPreferences = () => {
+  const saved = localStorage.getItem('ketchew_preferences');
+  return saved ? JSON.parse(saved) : getDefaultPreferences();
+};
+```
+
+## Rate Limiting (Server-Side)
+
+### Message Rate Limiting
+```javascript
+const messageRateLimit = new Map(); // socketId -> { count, resetTime }
+
+const isRateLimited = (socketId) => {
+  const now = Date.now();
+  const userLimit = messageRateLimit.get(socketId);
+  
+  if (!userLimit || now > userLimit.resetTime) {
+    messageRateLimit.set(socketId, { count: 1, resetTime: now + 60000 }); // 1 minute
+    return false;
+  }
+  
+  if (userLimit.count >= 60) { // 60 messages per minute
+    return true;
+  }
+  
+  userLimit.count++;
+  return false;
+};
+```
+
+## Development Environment
+
+### Local Development Setup
+```javascript
+// Server (Express + Socket.io)
+const express = require('express');
+const { createServer } = require('http');
+const { Server } = require('socket.io');
+
+const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"]
+  }
+});
+
+httpServer.listen(3001);
+```
+
+### Production Deployment
+- **Frontend**: Static hosting (Netlify, Vercel, GitHub Pages)
+- **Backend**: Simple server deployment (Railway, Heroku, DigitalOcean)
+- **No Database Required**: Eliminates database hosting costs and complexity
+
+This simplified architecture eliminates the need for user authentication, database management, and complex API endpoints while maintaining all core functionality through LocalStorage and Socket.io.
