@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors;
+  }
+  
+  .sidebar-tab {
+    @apply w-12 h-12 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center cursor-pointer transition-all duration-200 hover:bg-white/20 hover:translate-x-1;
+  }
+  
+  .sidebar-tab.active {
+    @apply bg-primary-500 border-primary-600;
+  }
+  
+  .popup-overlay {
+    @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4;
+  }
+  
+  .popup-container {
+    @apply bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden animate-popup-enter;
+  }
+}
