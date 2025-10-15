@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Plus, Check, Trash2, Edit3 } from 'lucide-react'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 
@@ -21,7 +21,7 @@ const TodoList: React.FC = () => {
         id: Date.now().toString(),
         text: newTodo.trim(),
         completed: false,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       }
       setTodos([...todos, newItem])
       setNewTodo('')
@@ -29,9 +29,7 @@ const TodoList: React.FC = () => {
   }
 
   const toggleTodo = (id: string) => {
-    setTodos(todos.map(todo =>
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo
-    ))
+    setTodos(todos.map(todo => (todo.id === id ? { ...todo, completed: !todo.completed } : todo)))
   }
 
   const deleteTodo = (id: string) => {
@@ -45,9 +43,9 @@ const TodoList: React.FC = () => {
 
   const saveEdit = () => {
     if (editText.trim() && editingId) {
-      setTodos(todos.map(todo =>
-        todo.id === editingId ? { ...todo, text: editText.trim() } : todo
-      ))
+      setTodos(
+        todos.map(todo => (todo.id === editingId ? { ...todo, text: editText.trim() } : todo))
+      )
       setEditingId(null)
       setEditText('')
     }
@@ -76,7 +74,7 @@ const TodoList: React.FC = () => {
   return (
     <div className="w-96">
       <h2 className="text-2xl font-bold mb-6">Todo List</h2>
-      
+
       {/* Stats */}
       <div className="mb-6 p-4 bg-gray-50 rounded-lg">
         <div className="text-sm text-gray-600">
@@ -98,15 +96,12 @@ const TodoList: React.FC = () => {
           <input
             type="text"
             value={newTodo}
-            onChange={(e) => setNewTodo(e.target.value)}
-            onKeyPress={(e) => handleKeyPress(e, 'add')}
+            onChange={e => setNewTodo(e.target.value)}
+            onKeyPress={e => handleKeyPress(e, 'add')}
             placeholder="Add a new task..."
             className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400"
           />
-          <button
-            onClick={addTodo}
-            className="btn-primary flex items-center gap-2 px-4"
-          >
+          <button onClick={addTodo} className="btn-primary flex items-center gap-2 px-4">
             <Plus size={16} />
             Add
           </button>
@@ -116,11 +111,9 @@ const TodoList: React.FC = () => {
       {/* Todo Items */}
       <div className="space-y-2 max-h-96 overflow-y-auto">
         {todos.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            No tasks yet. Add one above!
-          </div>
+          <div className="text-center py-8 text-gray-500">No tasks yet. Add one above!</div>
         ) : (
-          todos.map((todo) => (
+          todos.map(todo => (
             <div
               key={todo.id}
               className={`p-3 border rounded-lg transition-all ${
@@ -134,21 +127,15 @@ const TodoList: React.FC = () => {
                   <input
                     type="text"
                     value={editText}
-                    onChange={(e) => setEditText(e.target.value)}
-                    onKeyPress={(e) => handleKeyPress(e, 'edit')}
+                    onChange={e => setEditText(e.target.value)}
+                    onKeyPress={e => handleKeyPress(e, 'edit')}
                     className="flex-1 px-2 py-1 border border-gray-300 rounded"
                     autoFocus
                   />
-                  <button
-                    onClick={saveEdit}
-                    className="text-green-600 hover:text-green-700"
-                  >
+                  <button onClick={saveEdit} className="text-green-600 hover:text-green-700">
                     <Check size={16} />
                   </button>
-                  <button
-                    onClick={cancelEdit}
-                    className="text-gray-500 hover:text-gray-600"
-                  >
+                  <button onClick={cancelEdit} className="text-gray-500 hover:text-gray-600">
                     ×
                   </button>
                 </div>
@@ -164,17 +151,15 @@ const TodoList: React.FC = () => {
                   >
                     {todo.completed && <Check size={12} />}
                   </button>
-                  
+
                   <span
                     className={`flex-1 transition-all ${
-                      todo.completed
-                        ? 'text-gray-500 line-through'
-                        : 'text-gray-900'
+                      todo.completed ? 'text-gray-500 line-through' : 'text-gray-900'
                     }`}
                   >
                     {todo.text}
                   </span>
-                  
+
                   <div className="flex gap-1">
                     <button
                       onClick={() => startEditing(todo)}
@@ -208,10 +193,7 @@ const TodoList: React.FC = () => {
               Clear Completed ({completedCount})
             </button>
             <span className="text-gray-300">|</span>
-            <button
-              onClick={() => setTodos([])}
-              className="text-red-600 hover:text-red-700"
-            >
+            <button onClick={() => setTodos([])} className="text-red-600 hover:text-red-700">
               Clear All
             </button>
           </div>

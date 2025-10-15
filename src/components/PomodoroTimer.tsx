@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useCallback } from 'react'
 import { Play, Pause, Square, RotateCcw } from 'lucide-react'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 
@@ -24,31 +24,88 @@ const PomodoroTimer: React.FC = () => {
     studyDuration: 25,
     shortBreakDuration: 5,
     longBreakDuration: 15,
-    completedRounds: [false, false, false, false]
+    completedRounds: [false, false, false, false],
   })
 
   const intervalRef = useRef<number | null>(null)
   const startTimeRef = useRef<number>(0)
   const driftRef = useRef<number>(0)
+  const timeRemainingRef = useRef<number>(timerState.timeRemaining)
+
+  // Update the ref when timeRemaining changes
+  React.useEffect(() => {
+    timeRemainingRef.current = timerState.timeRemaining
+  }, [timerState.timeRemaining])
+
+  const handlePhaseComplete = useCallback(() => {
+    setTimerState(prev => {
+      const newCompletedRounds = [...prev.completedRounds]
+
+      if (prev.phase === 'study') {
+        // Mark current round as completed
+        newCompletedRounds[prev.currentRound - 1] = true
+
+        // Determine next phase
+        const nextPhase = prev.currentRound === 4 ? 'longBreak' : 'shortBreak'
+        const nextDuration =
+          nextPhase === 'longBreak' ? prev.longBreakDuration : prev.shortBreakDuration
+
+        return {
+          ...prev,
+          phase: nextPhase,
+          timeRemaining: nextDuration * 60,
+          isActive: false,
+          completedRounds: newCompletedRounds,
+        }
+      } else {
+        // Break completed, move to next round or reset
+        if (prev.currentRound === 4) {
+          // All rounds completed, reset
+          return {
+            ...prev,
+            currentRound: 1,
+            phase: 'study',
+            timeRemaining: prev.studyDuration * 60,
+            isActive: false,
+            completedRounds: [false, false, false, false],
+          }
+        } else {
+          // Move to next round
+          return {
+            ...prev,
+            currentRound: prev.currentRound + 1,
+            phase: 'study',
+            timeRemaining: prev.studyDuration * 60,
+            isActive: false,
+          }
+        }
+      }
+    })
+
+    // Play notification sound (would integrate with Howler.js)
+    console.log('Phase completed!')
+  }, [setTimerState])
 
   useEffect(() => {
     if (timerState.isActive && !timerState.isPaused) {
       startTimeRef.current = performance.now()
-      
+      timeRemainingRef.current = timerState.timeRemaining
+
       intervalRef.current = window.setInterval(() => {
         const now = performance.now()
         const elapsed = Math.floor((now - startTimeRef.current) / 1000)
-        const expectedTime = timerState.timeRemaining - elapsed - driftRef.current
-        
+        const expectedTime = timeRemainingRef.current - elapsed - driftRef.current
+
         if (expectedTime <= 0) {
           handlePhaseComplete()
         } else {
           setTimerState(prev => ({
             ...prev,
-            timeRemaining: expectedTime
+            timeRemaining: expectedTime,
           }))
+          timeRemainingRef.current = expectedTime
         }
-        
+
         // Drift correction every 10 seconds
         if (elapsed % 10 === 0) {
           const actualElapsed = elapsed + driftRef.current
@@ -68,75 +125,33 @@ const PomodoroTimer: React.FC = () => {
         clearInterval(intervalRef.current)
       }
     }
-  }, [timerState.isActive, timerState.isPaused])
-
-  const handlePhaseComplete = () => {
-    setTimerState(prev => {
-      const newCompletedRounds = [...prev.completedRounds]
-      
-      if (prev.phase === 'study') {
-        // Mark current round as completed
-        newCompletedRounds[prev.currentRound - 1] = true
-        
-        // Determine next phase
-        const nextPhase = prev.currentRound === 4 ? 'longBreak' : 'shortBreak'
-        const nextDuration = nextPhase === 'longBreak' ? prev.longBreakDuration : prev.shortBreakDuration
-        
-        return {
-          ...prev,
-          phase: nextPhase,
-          timeRemaining: nextDuration * 60,
-          isActive: false,
-          completedRounds: newCompletedRounds
-        }
-      } else {
-        // Break completed, move to next round or reset
-        if (prev.currentRound === 4) {
-          // All rounds completed, reset
-          return {
-            ...prev,
-            currentRound: 1,
-            phase: 'study',
-            timeRemaining: prev.studyDuration * 60,
-            isActive: false,
-            completedRounds: [false, false, false, false]
-          }
-        } else {
-          // Move to next round
-          return {
-            ...prev,
-            currentRound: prev.currentRound + 1,
-            phase: 'study',
-            timeRemaining: prev.studyDuration * 60,
-            isActive: false
-          }
-        }
-      }
-    })
-    
-    // Play notification sound (would integrate with Howler.js)
-    console.log('Phase completed!')
-  }
+  }, [
+    timerState.isActive,
+    timerState.isPaused,
+    timerState.timeRemaining,
+    handlePhaseComplete,
+    setTimerState,
+  ])
 
   const startTimer = () => {
     setTimerState(prev => ({
       ...prev,
       isActive: true,
-      isPaused: false
+      isPaused: false,
     }))
   }
 
   const pauseTimer = () => {
     setTimerState(prev => ({
       ...prev,
-      isPaused: true
+      isPaused: true,
     }))
   }
 
   const resumeTimer = () => {
     setTimerState(prev => ({
       ...prev,
-      isPaused: false
+      isPaused: false,
     }))
   }
 
@@ -145,9 +160,12 @@ const PomodoroTimer: React.FC = () => {
       ...prev,
       isActive: false,
       isPaused: false,
-      timeRemaining: prev.phase === 'study' ? prev.studyDuration * 60 :
-                     prev.phase === 'shortBreak' ? prev.shortBreakDuration * 60 :
-                     prev.longBreakDuration * 60
+      timeRemaining:
+        prev.phase === 'study'
+          ? prev.studyDuration * 60
+          : prev.phase === 'shortBreak'
+            ? prev.shortBreakDuration * 60
+            : prev.longBreakDuration * 60,
     }))
   }
 
@@ -159,7 +177,7 @@ const PomodoroTimer: React.FC = () => {
       timeRemaining: prev.studyDuration * 60,
       isActive: false,
       isPaused: false,
-      completedRounds: [false, false, false, false]
+      completedRounds: [false, false, false, false],
     }))
   }
 
@@ -185,7 +203,7 @@ const PomodoroTimer: React.FC = () => {
   return (
     <div className="w-96 text-center">
       <h2 className="text-2xl font-bold mb-6">Pomodoro Timer</h2>
-      
+
       {/* Progress Dots */}
       <div className="flex justify-center gap-2 mb-6">
         {timerState.completedRounds.map((completed, index) => (
@@ -230,12 +248,12 @@ const PomodoroTimer: React.FC = () => {
             Pause
           </button>
         )}
-        
+
         <button onClick={stopTimer} className="btn-secondary flex items-center gap-2">
           <Square size={16} />
           Stop
         </button>
-        
+
         <button onClick={resetTimer} className="btn-secondary flex items-center gap-2">
           <RotateCcw size={16} />
           Reset
@@ -253,10 +271,12 @@ const PomodoroTimer: React.FC = () => {
               min="1"
               max="60"
               value={timerState.studyDuration}
-              onChange={(e) => setTimerState(prev => ({
-                ...prev,
-                studyDuration: parseInt(e.target.value) || 25
-              }))}
+              onChange={e =>
+                setTimerState(prev => ({
+                  ...prev,
+                  studyDuration: parseInt(e.target.value) || 25,
+                }))
+              }
               className="w-full px-2 py-1 border border-gray-300 rounded"
             />
           </div>
@@ -267,10 +287,12 @@ const PomodoroTimer: React.FC = () => {
               min="1"
               max="30"
               value={timerState.shortBreakDuration}
-              onChange={(e) => setTimerState(prev => ({
-                ...prev,
-                shortBreakDuration: parseInt(e.target.value) || 5
-              }))}
+              onChange={e =>
+                setTimerState(prev => ({
+                  ...prev,
+                  shortBreakDuration: parseInt(e.target.value) || 5,
+                }))
+              }
               className="w-full px-2 py-1 border border-gray-300 rounded"
             />
           </div>
@@ -281,10 +303,12 @@ const PomodoroTimer: React.FC = () => {
               min="1"
               max="60"
               value={timerState.longBreakDuration}
-              onChange={(e) => setTimerState(prev => ({
-                ...prev,
-                longBreakDuration: parseInt(e.target.value) || 15
-              }))}
+              onChange={e =>
+                setTimerState(prev => ({
+                  ...prev,
+                  longBreakDuration: parseInt(e.target.value) || 15,
+                }))
+              }
               className="w-full px-2 py-1 border border-gray-300 rounded"
             />
           </div>

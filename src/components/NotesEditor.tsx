@@ -59,18 +59,23 @@ const NotesEditor: React.FC = () => {
     }
   }
 
-  const wordCount = notes.trim().split(/\s+/).filter(word => word.length > 0).length
+  const wordCount = notes
+    .trim()
+    .split(/\s+/)
+    .filter(word => word.length > 0).length
   const charCount = notes.length
 
   return (
     <div className="w-96 h-full flex flex-col">
       <h2 className="text-2xl font-bold mb-4">Session Notes</h2>
-      
+
       {/* Info Bar */}
       <div className="flex justify-between items-center mb-4 text-sm text-gray-600">
         <div className="flex items-center gap-2">
           <FileText size={14} />
-          <span>{wordCount} words, {charCount} chars</span>
+          <span>
+            {wordCount} words, {charCount} chars
+          </span>
         </div>
         <div className="flex items-center gap-2">
           {isAutoSaving ? (
@@ -109,7 +114,7 @@ Tips:
           <Save size={16} />
           Save Now
         </button>
-        
+
         <button
           onClick={downloadNotes}
           className="btn-secondary"
@@ -117,7 +122,7 @@ Tips:
         >
           Download
         </button>
-        
+
         <button
           onClick={clearNotes}
           className="btn-secondary text-red-600 hover:bg-red-50"

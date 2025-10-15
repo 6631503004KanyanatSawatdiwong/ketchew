@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 
 interface BackgroundOption {
@@ -14,76 +14,88 @@ const backgroundOptions: BackgroundOption[] = [
   {
     id: 'forest',
     name: 'Forest Path',
-    thumbnail: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=150&h=100&fit=crop&auto=format',
+    thumbnail:
+      'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=150&h=100&fit=crop&auto=format',
     url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&h=1080&fit=crop&auto=format',
-    category: 'nature'
+    category: 'nature',
   },
   {
     id: 'mountains',
     name: 'Mountain Lake',
-    thumbnail: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=150&h=100&fit=crop&auto=format',
+    thumbnail:
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=150&h=100&fit=crop&auto=format',
     url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=1080&fit=crop&auto=format',
-    category: 'nature'
+    category: 'nature',
   },
   {
     id: 'ocean',
     name: 'Ocean Waves',
-    thumbnail: 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=150&h=100&fit=crop&auto=format',
+    thumbnail:
+      'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=150&h=100&fit=crop&auto=format',
     url: 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=1920&h=1080&fit=crop&auto=format',
-    category: 'nature'
+    category: 'nature',
   },
-  
+
   // Abstract
   {
     id: 'gradient1',
     name: 'Purple Gradient',
-    thumbnail: 'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=150&h=100&fit=crop&auto=format',
+    thumbnail:
+      'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=150&h=100&fit=crop&auto=format',
     url: 'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=1920&h=1080&fit=crop&auto=format',
-    category: 'abstract'
+    category: 'abstract',
   },
   {
     id: 'gradient2',
     name: 'Blue Waves',
-    thumbnail: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=150&h=100&fit=crop&auto=format',
+    thumbnail:
+      'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=150&h=100&fit=crop&auto=format',
     url: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=1920&h=1080&fit=crop&auto=format',
-    category: 'abstract'
+    category: 'abstract',
   },
-  
+
   // Minimal
   {
     id: 'minimal1',
     name: 'Clean White',
-    thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDE1MCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE1MCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNmOWZhZmIiLz48L3N2Zz4=',
+    thumbnail:
+      'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDE1MCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE1MCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNmOWZhZmIiLz48L3N2Zz4=',
     url: '',
-    category: 'minimal'
+    category: 'minimal',
   },
   {
     id: 'minimal2',
     name: 'Soft Gray',
-    thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDE1MCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE1MCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNmM2Y0ZjYiLz48L3N2Zz4=',
+    thumbnail:
+      'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDE1MCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE1MCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNmM2Y0ZjYiLz48L3N2Zz4=',
     url: '',
-    category: 'minimal'
+    category: 'minimal',
   },
-  
+
   // Workspace
   {
     id: 'workspace1',
     name: 'Coffee Shop',
-    thumbnail: 'https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=150&h=100&fit=crop&auto=format',
+    thumbnail:
+      'https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=150&h=100&fit=crop&auto=format',
     url: 'https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=1920&h=1080&fit=crop&auto=format',
-    category: 'workspace'
+    category: 'workspace',
   },
   {
     id: 'workspace2',
     name: 'Modern Office',
-    thumbnail: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=150&h=100&fit=crop&auto=format',
+    thumbnail:
+      'https://images.unsplash.com/photo-1497366216548-37526070297c?w=150&h=100&fit=crop&auto=format',
     url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&h=1080&fit=crop&auto=format',
-    category: 'workspace'
-  }
+    category: 'workspace',
+  },
 ]
 
 const BackgroundSelector: React.FC = () => {
-  const [selectedBackground, setSelectedBackground] = useLocalStorage<string>('ketchew_background', 'minimal1')
+  const [selectedBackground, setSelectedBackground] = useLocalStorage<string>(
+    'ketchew_background',
+    'minimal1'
+  )
   const [selectedCategory, setSelectedCategory] = React.useState<string>('all')
 
   const categories = [
@@ -91,33 +103,37 @@ const BackgroundSelector: React.FC = () => {
     { id: 'nature', name: 'Nature' },
     { id: 'abstract', name: 'Abstract' },
     { id: 'minimal', name: 'Minimal' },
-    { id: 'workspace', name: 'Workspace' }
+    { id: 'workspace', name: 'Workspace' },
   ]
 
-  const filteredBackgrounds = selectedCategory === 'all' 
-    ? backgroundOptions 
-    : backgroundOptions.filter(bg => bg.category === selectedCategory)
+  const filteredBackgrounds =
+    selectedCategory === 'all'
+      ? backgroundOptions
+      : backgroundOptions.filter(bg => bg.category === selectedCategory)
 
-  const applyBackground = (background: BackgroundOption) => {
-    setSelectedBackground(background.id)
-    
-    // Apply background to body
-    const body = document.body
-    if (background.url) {
-      body.style.backgroundImage = `url(${background.url})`
-      body.style.backgroundSize = 'cover'
-      body.style.backgroundPosition = 'center'
-      body.style.backgroundRepeat = 'no-repeat'
-    } else {
-      // Handle minimal backgrounds with solid colors
-      body.style.backgroundImage = 'none'
-      if (background.id === 'minimal1') {
-        body.style.backgroundColor = '#f9fafb'
-      } else if (background.id === 'minimal2') {
-        body.style.backgroundColor = '#f3f4f6'
+  const applyBackground = useCallback(
+    (background: BackgroundOption) => {
+      setSelectedBackground(background.id)
+
+      // Apply background to body
+      const body = document.body
+      if (background.url) {
+        body.style.backgroundImage = `url(${background.url})`
+        body.style.backgroundSize = 'cover'
+        body.style.backgroundPosition = 'center'
+        body.style.backgroundRepeat = 'no-repeat'
+      } else {
+        // Handle minimal backgrounds with solid colors
+        body.style.backgroundImage = 'none'
+        if (background.id === 'minimal1') {
+          body.style.backgroundColor = '#f9fafb'
+        } else if (background.id === 'minimal2') {
+          body.style.backgroundColor = '#f3f4f6'
+        }
       }
-    }
-  }
+    },
+    [setSelectedBackground]
+  )
 
   // Apply saved background on component mount
   React.useEffect(() => {
@@ -125,16 +141,16 @@ const BackgroundSelector: React.FC = () => {
     if (savedBackground) {
       applyBackground(savedBackground)
     }
-  }, [])
+  }, [selectedBackground, applyBackground])
 
   return (
     <div className="w-96">
       <h2 className="text-2xl font-bold mb-6">Background Settings</h2>
-      
+
       {/* Category Filter */}
       <div className="mb-6">
         <div className="flex flex-wrap gap-2">
-          {categories.map((category) => (
+          {categories.map(category => (
             <button
               key={category.id}
               onClick={() => setSelectedCategory(category.id)}
@@ -152,7 +168,7 @@ const BackgroundSelector: React.FC = () => {
 
       {/* Background Grid */}
       <div className="grid grid-cols-2 gap-4 max-h-96 overflow-y-auto">
-        {filteredBackgrounds.map((background) => (
+        {filteredBackgrounds.map(background => (
           <div
             key={background.id}
             className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all hover:scale-105 ${
@@ -186,11 +202,11 @@ const BackgroundSelector: React.FC = () => {
           <input
             type="file"
             accept="image/*"
-            onChange={(e) => {
+            onChange={e => {
               const file = e.target.files?.[0]
               if (file) {
                 const reader = new FileReader()
-                reader.onload = (event) => {
+                reader.onload = event => {
                   const imageUrl = event.target?.result as string
                   if (imageUrl) {
                     document.body.style.backgroundImage = `url(${imageUrl})`

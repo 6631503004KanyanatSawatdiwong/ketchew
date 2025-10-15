@@ -1,42 +1,46 @@
 import React from 'react'
-import { Clock, CheckSquare, StickyNote, Image, Volume2 } from 'lucide-react'
+import { Timer, CheckSquare, FileText, Image, Volume2 } from 'lucide-react'
+import { PopupType } from '../types'
 
 interface SidebarProps {
-  activeTab: string | null
-  onTabClick: (tabId: string) => void
+  onOpenPopup: (popupType: PopupType) => void
+  activePopup: PopupType
 }
 
-const tabs = [
-  { id: 'background', label: 'Background', icon: Image },
-  { id: 'sounds', label: 'Sounds', icon: Volume2 },
-  { id: 'timer', label: 'Timer', icon: Clock },
-  { id: 'todo', label: 'To-Do', icon: CheckSquare },
-  { id: 'notes', label: 'Notes', icon: StickyNote }
-]
+const Sidebar: React.FC<SidebarProps> = ({ onOpenPopup, activePopup }) => {
+  const tabs = [
+    { id: 'timer' as const, icon: Timer, label: 'Timer' },
+    { id: 'tasks' as const, icon: CheckSquare, label: 'Tasks' },
+    { id: 'notes' as const, icon: FileText, label: 'Notes' },
+    { id: 'background' as const, icon: Image, label: 'Background' },
+    { id: 'audio' as const, icon: Volume2, label: 'Audio' },
+  ]
 
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabClick }) => {
   return (
-    <div className="fixed left-0 top-0 h-full w-20 bg-white/10 backdrop-blur-md border-r border-white/20 z-40 flex flex-col items-center py-6 gap-4">
-      {tabs.map((tab) => {
-        const Icon = tab.icon
-        const isActive = activeTab === tab.id
-        
-        return (
-          <button
-            key={tab.id}
-            onClick={() => onTabClick(tab.id)}
-            className={`sidebar-tab ${isActive ? 'active' : ''} text-white group relative`}
-            title={tab.label}
-          >
-            <Icon size={20} />
-            
-            {/* Tooltip */}
-            <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-              {tab.label}
-            </div>
-          </button>
-        )
-      })}
+    <div className="fixed left-4 top-1/2 transform -translate-y-1/2 z-40">
+      <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-2">
+        <div className="flex flex-col gap-1">
+          {tabs.map(({ id, icon: Icon, label }) => (
+            <button
+              key={id}
+              onClick={() => onOpenPopup(id)}
+              className={`p-3 rounded-lg transition-all duration-200 group relative ${
+                activePopup === id
+                  ? 'bg-gray-900 text-white shadow-md'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+              title={label}
+            >
+              <Icon size={20} />
+
+              {/* Tooltip */}
+              <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                {label}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

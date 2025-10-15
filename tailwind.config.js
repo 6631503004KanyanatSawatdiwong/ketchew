@@ -1,9 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
@@ -20,10 +17,10 @@ export default {
           500: '#64748b',
           600: '#475569',
           700: '#334155',
-        }
+        },
       },
       fontFamily: {
-        'mono': ['JetBrains Mono', 'Fira Code', 'monospace'],
+        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
       animation: {
         'popup-enter': 'popup-enter 0.2s ease-out',
@@ -32,14 +29,14 @@ export default {
         'popup-enter': {
           '0%': {
             opacity: '0',
-            transform: 'scale(0.95) translateY(20px)'
+            transform: 'scale(0.95) translateY(20px)',
           },
           '100%': {
             opacity: '1',
-            transform: 'scale(1) translateY(0)'
-          }
-        }
-      }
+            transform: 'scale(1) translateY(0)',
+          },
+        },
+      },
     },
   },
   plugins: [],

@@ -17,63 +17,63 @@ const soundOptions: SoundOption[] = [
     name: 'Rain',
     category: 'nature',
     url: 'https://www.soundjay.com/misc/sounds/rain-01.wav',
-    description: 'Gentle rain for focus'
+    description: 'Gentle rain for focus',
   },
   {
     id: 'forest',
     name: 'Forest',
     category: 'nature',
     url: 'https://www.soundjay.com/nature/sounds/forest-01.wav',
-    description: 'Birds and wind in trees'
+    description: 'Birds and wind in trees',
   },
   {
     id: 'waves',
     name: 'Ocean Waves',
     category: 'nature',
     url: 'https://www.soundjay.com/nature/sounds/waves-01.wav',
-    description: 'Peaceful ocean sounds'
+    description: 'Peaceful ocean sounds',
   },
-  
+
   // Ambient sounds
   {
     id: 'whitenoise',
     name: 'White Noise',
     category: 'ambient',
     url: 'https://www.soundjay.com/misc/sounds/white-noise-01.wav',
-    description: 'Steady background noise'
+    description: 'Steady background noise',
   },
   {
     id: 'cafe',
     name: 'Coffee Shop',
     category: 'ambient',
     url: 'https://www.soundjay.com/misc/sounds/cafe-01.wav',
-    description: 'Ambient cafe chatter'
+    description: 'Ambient cafe chatter',
   },
-  
+
   // Focus sounds
   {
     id: 'binaural',
     name: 'Binaural Beats',
     category: 'focus',
     url: 'https://www.soundjay.com/misc/sounds/binaural-01.wav',
-    description: 'Alpha waves for concentration'
+    description: 'Alpha waves for concentration',
   },
-  
+
   // Notification sounds
   {
     id: 'bell',
     name: 'Meditation Bell',
     category: 'notification',
     url: 'https://www.soundjay.com/misc/sounds/bell-01.wav',
-    description: 'Gentle bell chime'
+    description: 'Gentle bell chime',
   },
   {
     id: 'chime',
     name: 'Wind Chime',
     category: 'notification',
     url: 'https://www.soundjay.com/misc/sounds/chime-01.wav',
-    description: 'Soft wind chime'
-  }
+    description: 'Soft wind chime',
+  },
 ]
 
 const SoundSelector: React.FC = () => {
@@ -82,7 +82,7 @@ const SoundSelector: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false)
   const [volume, setVolume] = useState(0.5)
   const [isMuted, setIsMuted] = useState(false)
-  
+
   // For now, we'll use HTML audio API until Howler.js is available
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const currentSoundRef = useRef<string | null>(null)
@@ -92,12 +92,13 @@ const SoundSelector: React.FC = () => {
     { id: 'nature', name: 'Nature' },
     { id: 'ambient', name: 'Ambient' },
     { id: 'focus', name: 'Focus' },
-    { id: 'notification', name: 'Notifications' }
+    { id: 'notification', name: 'Notifications' },
   ]
 
-  const filteredSounds = selectedCategory === 'all' 
-    ? soundOptions 
-    : soundOptions.filter(sound => sound.category === selectedCategory)
+  const filteredSounds =
+    selectedCategory === 'all'
+      ? soundOptions
+      : soundOptions.filter(sound => sound.category === selectedCategory)
 
   const playSound = (soundId: string) => {
     const sound = soundOptions.find(s => s.id === soundId)
@@ -112,7 +113,7 @@ const SoundSelector: React.FC = () => {
     // For MVP, we'll simulate audio playback
     // In production, this would use Howler.js or Web Audio API
     console.log(`Playing sound: ${sound.name}`)
-    
+
     setSelectedSound(soundId)
     setIsPlaying(true)
     currentSoundRef.current = soundId
@@ -128,7 +129,7 @@ const SoundSelector: React.FC = () => {
       audioRef.current.pause()
       audioRef.current = null
     }
-    
+
     setIsPlaying(false)
     setSelectedSound(null)
     currentSoundRef.current = null
@@ -149,21 +150,10 @@ const SoundSelector: React.FC = () => {
     }
   }
 
-  const playNotificationSound = (soundId: string) => {
-    const sound = soundOptions.find(s => s.id === soundId)
-    if (!sound) return
-
-    // This would be called by the timer when phases complete
-    console.log(`Playing notification: ${sound.name}`)
-    
-    // In production, this would create a new Howl instance for one-time playback
-    // For now, just log the action
-  }
-
   return (
     <div className="w-96">
       <h2 className="text-2xl font-bold mb-6">Sound Settings</h2>
-      
+
       {/* Currently Playing */}
       {selectedSound && (
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -176,14 +166,11 @@ const SoundSelector: React.FC = () => {
                 {soundOptions.find(s => s.id === selectedSound)?.description}
               </div>
             </div>
-            <button
-              onClick={stopSound}
-              className="text-blue-600 hover:text-blue-700"
-            >
+            <button onClick={stopSound} className="text-blue-600 hover:text-blue-700">
               <Pause size={20} />
             </button>
           </div>
-          
+
           {/* Volume Control */}
           <div className="flex items-center gap-2">
             <button onClick={toggleMute} className="text-blue-600">
@@ -195,7 +182,7 @@ const SoundSelector: React.FC = () => {
               max="1"
               step="0.1"
               value={isMuted ? 0 : volume}
-              onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+              onChange={e => handleVolumeChange(parseFloat(e.target.value))}
               className="flex-1"
             />
             <span className="text-sm text-blue-700 w-8">
@@ -208,7 +195,7 @@ const SoundSelector: React.FC = () => {
       {/* Category Filter */}
       <div className="mb-6">
         <div className="flex flex-wrap gap-2">
-          {categories.map((category) => (
+          {categories.map(category => (
             <button
               key={category.id}
               onClick={() => setSelectedCategory(category.id)}
@@ -226,7 +213,7 @@ const SoundSelector: React.FC = () => {
 
       {/* Sound List */}
       <div className="space-y-2 max-h-64 overflow-y-auto mb-6">
-        {filteredSounds.map((sound) => (
+        {filteredSounds.map(sound => (
           <div
             key={sound.id}
             className={`p-3 border rounded-lg transition-all cursor-pointer ${
@@ -240,9 +227,7 @@ const SoundSelector: React.FC = () => {
               <div className="flex-1">
                 <div className="font-medium">{sound.name}</div>
                 <div className="text-sm text-gray-600">{sound.description}</div>
-                <div className="text-xs text-gray-500 capitalize mt-1">
-                  {sound.category}
-                </div>
+                <div className="text-xs text-gray-500 capitalize mt-1">{sound.category}</div>
               </div>
               <div className="ml-3">
                 {selectedSound === sound.id && isPlaying ? (
@@ -261,27 +246,23 @@ const SoundSelector: React.FC = () => {
         <h3 className="font-semibold mb-3">Timer Notifications</h3>
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Study Session End
-            </label>
+            <label className="block text-sm font-medium mb-1">Study Session End</label>
             <select className="w-full px-3 py-2 border border-gray-300 rounded-lg">
               <option value="bell">Meditation Bell</option>
               <option value="chime">Wind Chime</option>
               <option value="none">No Sound</option>
             </select>
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Break End
-            </label>
+            <label className="block text-sm font-medium mb-1">Break End</label>
             <select className="w-full px-3 py-2 border border-gray-300 rounded-lg">
               <option value="bell">Meditation Bell</option>
               <option value="chime">Wind Chime</option>
               <option value="none">No Sound</option>
             </select>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Play notification sounds</span>
             <label className="relative inline-flex items-center cursor-pointer">

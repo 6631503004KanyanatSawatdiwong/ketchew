@@ -3,7 +3,9 @@
 ## FR01: Pomodoro Timer System
 
 ### FR01.1: Timer Cycle Implementation
+
 **Requirement**: System shall implement the standard Pomodoro Technique cycle
+
 - **Description**: Default 4-round cycle with customizable durations
 - **Acceptance Criteria**:
   - Round 1-3: Study 25min → Short Break 5min
@@ -14,7 +16,9 @@
 - **Dependencies**: None
 
 ### FR01.2: Progress Visualization
+
 **Requirement**: System shall display visual progress indicators
+
 - **Description**: 4 grey dots that turn black as rounds complete
 - **Acceptance Criteria**:
   - Initial state: 4 grey dots displayed
@@ -25,7 +29,9 @@
 - **Dependencies**: FR01.1
 
 ### FR01.3: Timer Controls
+
 **Requirement**: System shall provide comprehensive timer control functionality
+
 - **Description**: Start, Stop, Pause, Resume controls for all timer phases
 - **Acceptance Criteria**:
   - Start button initiates countdown
@@ -37,7 +43,9 @@
 - **Dependencies**: FR01.1
 
 ### FR01.4: Duration Customization
+
 **Requirement**: System shall allow users to customize timer durations
+
 - **Description**: Adjustable study time, short break, and long break durations
 - **Acceptance Criteria**:
   - Study duration range: 1-60 minutes (default: 25)
@@ -49,7 +57,9 @@
 - **Dependencies**: FR01.1
 
 ### FR01.5: Manual Phase Transitions
+
 **Requirement**: System shall require manual user action to start each phase
+
 - **Description**: No automatic timer start; user must click to begin each phase
 - **Acceptance Criteria**:
   - Timer switches to next phase but doesn't auto-start
@@ -60,7 +70,9 @@
 - **Dependencies**: FR01.1
 
 ### FR01.6: Break Type Selection
+
 **Requirement**: System shall allow break type selection during break phases
+
 - **Description**: Option to choose long break during any break phase
 - **Acceptance Criteria**:
   - Default break type shown (short for rounds 1-3, long for round 4)
@@ -71,7 +83,9 @@
 - **Dependencies**: FR01.1, FR01.4
 
 ### FR01.7: Timer State Persistence
+
 **Requirement**: System shall maintain timer state across browser sessions
+
 - **Description**: Timer progress and settings survive browser refresh/close
 - **Acceptance Criteria**:
   - Current round, phase, and time remaining saved
@@ -84,7 +98,9 @@
 ## FR02: Task Management System
 
 ### FR02.1: Task Creation
+
 **Requirement**: System shall enable users to create new tasks
+
 - **Description**: Add new tasks with descriptive text
 - **Acceptance Criteria**:
   - Text input field for task description
@@ -95,7 +111,9 @@
 - **Dependencies**: None
 
 ### FR02.2: Task Modification
+
 **Requirement**: System shall allow editing of existing tasks
+
 - **Description**: In-place editing of task text content
 - **Acceptance Criteria**:
   - Click or double-click to enter edit mode
@@ -106,7 +124,9 @@
 - **Dependencies**: FR02.1
 
 ### FR02.3: Task Deletion
+
 **Requirement**: System shall provide task removal functionality
+
 - **Description**: Remove tasks from the list permanently
 - **Acceptance Criteria**:
   - Delete button/icon for each task
@@ -117,7 +137,9 @@
 - **Dependencies**: FR02.1
 
 ### FR02.4: Task Status Management
+
 **Requirement**: System shall track task completion status
+
 - **Description**: Mark tasks as complete or incomplete
 - **Acceptance Criteria**:
   - Checkbox for each task
@@ -128,7 +150,9 @@
 - **Dependencies**: FR02.1
 
 ### FR02.5: Task Data Persistence
+
 **Requirement**: System shall store task data persistently in LocalStorage only
+
 - **Description**: Tasks saved locally in browser storage without cloud sync
 - **Acceptance Criteria**:
   - LocalStorage for offline access and persistence
@@ -139,7 +163,9 @@
 - **Dependencies**: FR02.1
 
 ### FR02.6: Pomodoro Integration
+
 **Requirement**: System shall integrate with pomodoro timer functionality
+
 - **Description**: Track task completion during pomodoro sessions locally
 - **Acceptance Criteria**:
   - Associate tasks with pomodoro sessions in LocalStorage
@@ -152,7 +178,9 @@
 ## FR03: Real-time Collaboration System
 
 ### FR03.1: Session Management
+
 **Requirement**: System shall provide collaborative session creation and sharing
+
 - **Description**: Generate unique session links for sharing with memory-based storage
 - **Acceptance Criteria**:
   - Unique session ID generation using crypto.randomUUID()
@@ -164,7 +192,9 @@
 - **Dependencies**: Socket.io Backend
 
 ### FR03.2: Participant Management
+
 **Requirement**: System shall handle user joining and identification
+
 - **Description**: Name and avatar selection for session participants (guest-only)
 - **Acceptance Criteria**:
   - Name input field (1-30 characters)
@@ -176,7 +206,9 @@
 - **Dependencies**: FR03.1
 
 ### FR03.3: Timer Synchronization
+
 **Requirement**: System shall synchronize timer state in real-time
+
 - **Description**: All participants see the same timer state
 - **Acceptance Criteria**:
   - Host controls timer (start, pause, resume)
@@ -187,7 +219,9 @@
 - **Dependencies**: FR03.1, FR01.1, NFR02
 
 ### FR03.4: Live Chat System
+
 **Requirement**: System shall provide real-time messaging
+
 - **Description**: Text chat functionality during active sessions
 - **Acceptance Criteria**:
   - Text input with send functionality
@@ -198,7 +232,9 @@
 - **Dependencies**: FR03.1, FR03.2, NFR02, NFR09
 
 ### FR03.5: Session Capacity Management
+
 **Requirement**: System shall enforce participant limits
+
 - **Description**: Maximum 10 concurrent users per session
 - **Acceptance Criteria**:
   - Connection limit enforcement
@@ -209,7 +245,9 @@
 - **Dependencies**: FR03.1, NFR03
 
 ### FR03.6: Session Lifecycle Management
+
 **Requirement**: System shall manage session start and end
+
 - **Description**: Clean session termination and cleanup
 - **Acceptance Criteria**:
   - Host can end session for all participants
@@ -220,7 +258,9 @@
 - **Dependencies**: FR03.1, FR03.4
 
 ### FR03.7: Host Privileges
+
 **Requirement**: System shall provide special privileges for session host
+
 - **Description**: Session creator has additional control capabilities
 - **Acceptance Criteria**:
   - Timer control exclusive to host
@@ -233,7 +273,9 @@
 ## FR04: Customization and Personalization System
 
 ### FR04.1: Background Sound Library
+
 **Requirement**: System shall provide preset natural background sounds
+
 - **Description**: Audio library with nature and ambient sounds
 - **Acceptance Criteria**:
   - Minimum 10 preset sound options
@@ -244,7 +286,9 @@
 - **Dependencies**: None
 
 ### FR04.2: Background Image Selection
+
 **Requirement**: System shall offer customizable background images
+
 - **Description**: Visual customization with preset image library
 - **Acceptance Criteria**:
   - Minimum 15 background image options
@@ -255,7 +299,9 @@
 - **Dependencies**: None
 
 ### FR04.3: Audio Controls
+
 **Requirement**: System shall provide comprehensive audio control
+
 - **Description**: Mute/unmute functionality for all audio elements
 - **Acceptance Criteria**:
   - Global mute toggle
@@ -266,7 +312,9 @@
 - **Dependencies**: FR04.1
 
 ### FR04.4: Volume Management
+
 **Requirement**: System shall allow volume adjustment
+
 - **Description**: Fine-grained volume control for audio elements
 - **Acceptance Criteria**:
   - Volume slider (0-100%)
@@ -277,7 +325,9 @@
 - **Dependencies**: FR04.1, FR04.3
 
 ### FR04.5: Preference Persistence
+
 **Requirement**: System shall maintain user customization settings in LocalStorage
+
 - **Description**: Settings persist in browser storage without cloud sync
 - **Acceptance Criteria**:
   - LocalStorage for persistent customization settings
@@ -289,7 +339,9 @@
 - **Dependencies**: LocalStorage API
 
 ### FR04.6: Theme System
+
 **Requirement**: System shall support theme switching stored in LocalStorage
+
 - **Description**: Light and dark mode support with local persistence
 - **Acceptance Criteria**:
   - Light theme (default)
@@ -303,7 +355,9 @@
 ## FR05: Progress Tracking and Analytics System
 
 ### FR05.1: Session Recording
+
 **Requirement**: System shall record completed pomodoro sessions
+
 - **Description**: Detailed logging of timer sessions with metadata
 - **Acceptance Criteria**:
   - Timestamp recording for each session
@@ -314,7 +368,9 @@
 - **Dependencies**: FR01.1
 
 ### FR05.2: Time Aggregation
+
 **Requirement**: System shall calculate study and break time totals
+
 - **Description**: Aggregate time spent in different activities
 - **Acceptance Criteria**:
   - Daily total calculations
@@ -325,7 +381,9 @@
 - **Dependencies**: FR05.1
 
 ### FR05.3: Streak Calculation
+
 **Requirement**: System shall track productivity streaks
+
 - **Description**: Calculate consecutive days with completed pomodoros
 - **Acceptance Criteria**:
   - Current streak display
@@ -336,7 +394,9 @@
 - **Dependencies**: FR05.1, FR05.2
 
 ### FR05.4: Analytics Dashboard
+
 **Requirement**: System shall provide visual analytics interface
+
 - **Description**: Charts and graphs for productivity visualization
 - **Acceptance Criteria**:
   - Daily activity chart
@@ -347,7 +407,9 @@
 - **Dependencies**: FR05.1, FR05.2, FR05.3
 
 ### FR05.5: Data Export
+
 **Requirement**: System shall enable data export functionality
+
 - **Description**: Export productivity data in various formats
 - **Acceptance Criteria**:
   - CSV export for spreadsheet analysis
@@ -358,7 +420,9 @@
 - **Dependencies**: FR05.1, FR05.2
 
 ### FR05.6: Social Sharing
+
 **Requirement**: System shall support social media sharing
+
 - **Description**: Share productivity achievements on social platforms
 - **Acceptance Criteria**:
   - Achievement milestone sharing
@@ -369,7 +433,9 @@
 - **Dependencies**: FR05.2, FR05.3
 
 ### FR05.7: Data Storage and Sync
+
 **Requirement**: System shall store progress data persistently in LocalStorage only
+
 - **Description**: Local storage without cloud synchronization
 - **Acceptance Criteria**:
   - LocalStorage for offline access and persistence
@@ -383,7 +449,9 @@
 ## FR06: Notes and Documentation System
 
 ### FR06.1: Note Creation
+
 **Requirement**: System shall provide note creation functionality
+
 - **Description**: Simple text editor for quick note-taking
 - **Acceptance Criteria**:
   - Text area for note content
@@ -394,7 +462,9 @@
 - **Dependencies**: None
 
 ### FR06.2: Text Formatting
+
 **Requirement**: System shall support basic text formatting
+
 - **Description**: Essential formatting options for note content
 - **Acceptance Criteria**:
   - Bold and italic text formatting
@@ -405,7 +475,9 @@
 - **Dependencies**: FR06.1
 
 ### FR06.3: Auto-save Functionality
+
 **Requirement**: System shall automatically save note content
+
 - **Description**: Continuous saving to prevent data loss
 - **Acceptance Criteria**:
   - Save every 5 seconds during editing
@@ -416,7 +488,9 @@
 - **Dependencies**: FR06.1
 
 ### FR06.4: Session-based Storage
+
 **Requirement**: System shall use session-based note storage
+
 - **Description**: Notes cleared when browser session ends
 - **Acceptance Criteria**:
   - Storage in sessionStorage
@@ -427,7 +501,9 @@
 - **Dependencies**: FR06.1
 
 ### FR06.5: UI Integration
+
 **Requirement**: System shall integrate notes with main popup system
+
 - **Description**: Consistent interface with other application features
 - **Acceptance Criteria**:
   - Popup overlay for notes interface
@@ -438,7 +514,9 @@
 - **Dependencies**: FR06.1, Main UI System
 
 ### FR06.6: Search Functionality
+
 **Requirement**: System shall provide note search capabilities
+
 - **Description**: Find content within notes quickly
 - **Acceptance Criteria**:
   - Text search within note content
@@ -451,6 +529,7 @@
 ## Functional Requirements Summary
 
 ### High Priority FRs (Must Have)
+
 - FR01.1, FR01.2, FR01.3, FR01.5, FR01.7 (Core Timer)
 - FR02.1, FR02.2, FR02.3, FR02.4, FR02.5 (Basic Task Management)
 - FR03.1, FR03.2, FR03.3, FR03.4, FR03.6 (Core Collaboration)
@@ -458,6 +537,7 @@
 - FR05.1, FR05.2, FR05.7 (Basic Progress Tracking)
 
 ### Medium Priority FRs (Should Have)
+
 - FR01.4, FR01.6 (Timer Customization)
 - FR02.6 (Pomodoro Integration)
 - FR03.5, FR03.7 (Advanced Collaboration)
@@ -466,6 +546,7 @@
 - FR06.1, FR06.3, FR06.4, FR06.5 (Notes System)
 
 ### Low Priority FRs (Could Have)
+
 - FR04.6 (Theme System)
 - FR05.6 (Social Sharing)
 - FR06.2, FR06.6 (Advanced Notes Features)

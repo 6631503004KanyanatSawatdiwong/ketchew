@@ -9,7 +9,7 @@ interface PopupOverlayProps {
 const PopupOverlay: React.FC<PopupOverlayProps> = ({ children, onClose }) => {
   return (
     <div className="popup-overlay" onClick={onClose}>
-      <div className="popup-container" onClick={(e) => e.stopPropagation()}>
+      <div className="popup-container" onClick={e => e.stopPropagation()}>
         {/* Close button */}
         <div className="absolute top-4 right-4 z-10">
           <button
@@ -19,11 +19,9 @@ const PopupOverlay: React.FC<PopupOverlayProps> = ({ children, onClose }) => {
             <X size={16} />
           </button>
         </div>
-        
+
         {/* Content */}
-        <div className="p-6">
-          {children}
-        </div>
+        <div className="p-6">{children}</div>
       </div>
     </div>
   )

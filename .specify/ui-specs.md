@@ -3,6 +3,7 @@
 ## Design System
 
 ### Color Palette
+
 ```css
 :root {
   /* Primary Colors */
@@ -49,21 +50,22 @@
 ```
 
 ### Typography
+
 ```css
 /* Font Families */
 --font-primary: 'Inter', system-ui, sans-serif;
 --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
 /* Font Sizes */
---text-xs: 0.75rem;    /* 12px */
---text-sm: 0.875rem;   /* 14px */
---text-base: 1rem;     /* 16px */
---text-lg: 1.125rem;   /* 18px */
---text-xl: 1.25rem;    /* 20px */
---text-2xl: 1.5rem;    /* 24px */
---text-3xl: 1.875rem;  /* 30px */
---text-4xl: 2.25rem;   /* 36px */
---text-5xl: 3rem;      /* 48px */
+--text-xs: 0.75rem; /* 12px */
+--text-sm: 0.875rem; /* 14px */
+--text-base: 1rem; /* 16px */
+--text-lg: 1.125rem; /* 18px */
+--text-xl: 1.25rem; /* 20px */
+--text-2xl: 1.5rem; /* 24px */
+--text-3xl: 1.875rem; /* 30px */
+--text-4xl: 2.25rem; /* 36px */
+--text-5xl: 3rem; /* 48px */
 
 /* Font Weights */
 --font-light: 300;
@@ -74,37 +76,40 @@
 ```
 
 ### Spacing System
+
 ```css
 /* Spacing Scale */
---space-1: 0.25rem;   /* 4px */
---space-2: 0.5rem;    /* 8px */
---space-3: 0.75rem;   /* 12px */
---space-4: 1rem;      /* 16px */
---space-5: 1.25rem;   /* 20px */
---space-6: 1.5rem;    /* 24px */
---space-8: 2rem;      /* 32px */
---space-10: 2.5rem;   /* 40px */
---space-12: 3rem;     /* 48px */
---space-16: 4rem;     /* 64px */
---space-20: 5rem;     /* 80px */
---space-24: 6rem;     /* 96px */
+--space-1: 0.25rem; /* 4px */
+--space-2: 0.5rem; /* 8px */
+--space-3: 0.75rem; /* 12px */
+--space-4: 1rem; /* 16px */
+--space-5: 1.25rem; /* 20px */
+--space-6: 1.5rem; /* 24px */
+--space-8: 2rem; /* 32px */
+--space-10: 2.5rem; /* 40px */
+--space-12: 3rem; /* 48px */
+--space-16: 4rem; /* 64px */
+--space-20: 5rem; /* 80px */
+--space-24: 6rem; /* 96px */
 ```
 
 ### Border Radius
+
 ```css
 --radius-none: 0;
---radius-sm: 0.125rem;   /* 2px */
---radius-base: 0.25rem;  /* 4px */
---radius-md: 0.375rem;   /* 6px */
---radius-lg: 0.5rem;     /* 8px */
---radius-xl: 0.75rem;    /* 12px */
---radius-2xl: 1rem;      /* 16px */
+--radius-sm: 0.125rem; /* 2px */
+--radius-base: 0.25rem; /* 4px */
+--radius-md: 0.375rem; /* 6px */
+--radius-lg: 0.5rem; /* 8px */
+--radius-xl: 0.75rem; /* 12px */
+--radius-2xl: 1rem; /* 16px */
 --radius-full: 9999px;
 ```
 
 ## Layout Specifications
 
 ### Main Desktop Interface
+
 ```css
 .desktop-container {
   width: 100vw;
@@ -118,6 +123,7 @@
 ```
 
 ### Sticky Sidebar
+
 ```css
 .sidebar {
   position: fixed;
@@ -160,6 +166,7 @@
 ```
 
 ### Header Controls
+
 ```css
 .header-controls {
   position: fixed;
@@ -190,6 +197,7 @@
 ```
 
 ### Popup Overlay System
+
 ```css
 .popup-overlay {
   position: fixed;
@@ -228,6 +236,7 @@
 ## Component-Specific UI
 
 ### Pomodoro Timer
+
 ```css
 .timer-container {
   width: 480px;
@@ -297,6 +306,7 @@
 ```
 
 ### Todo List
+
 ```css
 .todo-container {
   width: 400px;
@@ -356,6 +366,7 @@
 ```
 
 ### Collaboration Interface
+
 ```css
 .collaboration-container {
   width: 600px;
@@ -414,6 +425,7 @@
 ## Responsive Design
 
 ### Breakpoints
+
 ```css
 /* Mobile */
 @media (max-width: 768px) {
@@ -425,12 +437,12 @@
     flex-direction: row;
     justify-content: center;
   }
-  
+
   .popup-container {
     width: 95vw;
     height: 90vh;
   }
-  
+
   .timer-container {
     width: 100%;
     padding: var(--space-4);
@@ -442,7 +454,7 @@
   .sidebar {
     width: 60px;
   }
-  
+
   .popup-container {
     max-width: 80vw;
   }
@@ -452,6 +464,7 @@
 ## Animation System
 
 ### Transitions
+
 ```css
 .fade-enter {
   opacity: 0;
@@ -482,11 +495,13 @@
 ```
 
 ### Loading States
+
 ```css
 .skeleton {
-  background: linear-gradient(90deg, 
-    var(--color-gray-200) 25%, 
-    var(--color-gray-100) 50%, 
+  background: linear-gradient(
+    90deg,
+    var(--color-gray-200) 25%,
+    var(--color-gray-100) 50%,
     var(--color-gray-200) 75%
   );
   background-size: 200% 100%;
@@ -506,6 +521,7 @@
 ## Accessibility
 
 ### Focus States
+
 ```css
 .focusable:focus {
   outline: 2px solid var(--color-primary-500);
@@ -526,6 +542,7 @@
 ```
 
 ### ARIA Labels
+
 - All interactive elements have appropriate ARIA labels
 - Timer status announced to screen readers
 - Progress indicators accessible via ARIA live regions
