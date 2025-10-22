@@ -1,194 +1,30 @@
-import React, { useEffect, useRef, useCallback } from 'react'
+import React from 'react'
 import { Play, Pause, Square, RotateCcw } from 'lucide-react'
-import { useLocalStorage } from '../hooks/useLocalStorage'
-
-interface PomodoroState {
-  currentRound: number
-  phase: 'study' | 'shortBreak' | 'longBreak'
-  timeRemaining: number
-  isActive: boolean
-  isPaused: boolean
-  studyDuration: number
-  shortBreakDuration: number
-  longBreakDuration: number
-  completedRounds: boolean[]
-}
+import { useTimerStore } from '../stores/timerStore'
+import TimerDisplay from './TimerDisplay'
+import TimerProgress from './TimerProgress'
+import PhaseNotification from './PhaseNotification'
+import TimerSettingsPanel from './TimerSettingsPanel'
 
 const PomodoroTimer: React.FC = () => {
-  const [timerState, setTimerState] = useLocalStorage<PomodoroState>('ketchew_timer', {
-    currentRound: 1,
-    phase: 'study',
-    timeRemaining: 25 * 60, // 25 minutes in seconds
-    isActive: false,
-    isPaused: false,
-    studyDuration: 25,
-    shortBreakDuration: 5,
-    longBreakDuration: 15,
-    completedRounds: [false, false, false, false],
-  })
-
-  const intervalRef = useRef<number | null>(null)
-  const startTimeRef = useRef<number>(0)
-  const driftRef = useRef<number>(0)
-  const timeRemainingRef = useRef<number>(timerState.timeRemaining)
-
-  // Update the ref when timeRemaining changes
-  React.useEffect(() => {
-    timeRemainingRef.current = timerState.timeRemaining
-  }, [timerState.timeRemaining])
-
-  const handlePhaseComplete = useCallback(() => {
-    setTimerState(prev => {
-      const newCompletedRounds = [...prev.completedRounds]
-
-      if (prev.phase === 'study') {
-        // Mark current round as completed
-        newCompletedRounds[prev.currentRound - 1] = true
-
-        // Determine next phase
-        const nextPhase = prev.currentRound === 4 ? 'longBreak' : 'shortBreak'
-        const nextDuration =
-          nextPhase === 'longBreak' ? prev.longBreakDuration : prev.shortBreakDuration
-
-        return {
-          ...prev,
-          phase: nextPhase,
-          timeRemaining: nextDuration * 60,
-          isActive: false,
-          completedRounds: newCompletedRounds,
-        }
-      } else {
-        // Break completed, move to next round or reset
-        if (prev.currentRound === 4) {
-          // All rounds completed, reset
-          return {
-            ...prev,
-            currentRound: 1,
-            phase: 'study',
-            timeRemaining: prev.studyDuration * 60,
-            isActive: false,
-            completedRounds: [false, false, false, false],
-          }
-        } else {
-          // Move to next round
-          return {
-            ...prev,
-            currentRound: prev.currentRound + 1,
-            phase: 'study',
-            timeRemaining: prev.studyDuration * 60,
-            isActive: false,
-          }
-        }
-      }
-    })
-
-    // Play notification sound (would integrate with Howler.js)
-    console.log('Phase completed!')
-  }, [setTimerState])
-
-  useEffect(() => {
-    if (timerState.isActive && !timerState.isPaused) {
-      startTimeRef.current = performance.now()
-      timeRemainingRef.current = timerState.timeRemaining
-
-      intervalRef.current = window.setInterval(() => {
-        const now = performance.now()
-        const elapsed = Math.floor((now - startTimeRef.current) / 1000)
-        const expectedTime = timeRemainingRef.current - elapsed - driftRef.current
-
-        if (expectedTime <= 0) {
-          handlePhaseComplete()
-        } else {
-          setTimerState(prev => ({
-            ...prev,
-            timeRemaining: expectedTime,
-          }))
-          timeRemainingRef.current = expectedTime
-        }
-
-        // Drift correction every 10 seconds
-        if (elapsed % 10 === 0) {
-          const actualElapsed = elapsed + driftRef.current
-          const expectedElapsed = Math.floor((now - startTimeRef.current) / 1000)
-          driftRef.current = actualElapsed - expectedElapsed
-        }
-      }, 1000)
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
-      }
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
-  }, [
-    timerState.isActive,
-    timerState.isPaused,
-    timerState.timeRemaining,
-    handlePhaseComplete,
-    setTimerState,
-  ])
-
-  const startTimer = () => {
-    setTimerState(prev => ({
-      ...prev,
-      isActive: true,
-      isPaused: false,
-    }))
-  }
-
-  const pauseTimer = () => {
-    setTimerState(prev => ({
-      ...prev,
-      isPaused: true,
-    }))
-  }
-
-  const resumeTimer = () => {
-    setTimerState(prev => ({
-      ...prev,
-      isPaused: false,
-    }))
-  }
-
-  const stopTimer = () => {
-    setTimerState(prev => ({
-      ...prev,
-      isActive: false,
-      isPaused: false,
-      timeRemaining:
-        prev.phase === 'study'
-          ? prev.studyDuration * 60
-          : prev.phase === 'shortBreak'
-            ? prev.shortBreakDuration * 60
-            : prev.longBreakDuration * 60,
-    }))
-  }
-
-  const resetTimer = () => {
-    setTimerState(prev => ({
-      ...prev,
-      currentRound: 1,
-      phase: 'study',
-      timeRemaining: prev.studyDuration * 60,
-      isActive: false,
-      isPaused: false,
-      completedRounds: [false, false, false, false],
-    }))
-  }
-
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-  }
+  const {
+    currentRound,
+    currentPhase,
+    timeRemainingMs,
+    status,
+    completedRounds,
+    showPhaseNotification,
+    lastCompletedPhase,
+    startTimer,
+    pauseTimer,
+    resumeTimer,
+    stopTimer,
+    resetSession,
+    dismissNotification,
+  } = useTimerStore()
 
   const getPhaseLabel = () => {
-    switch (timerState.phase) {
+    switch (currentPhase) {
       case 'study':
         return 'Focus Time'
       case 'shortBreak':
@@ -201,120 +37,96 @@ const PomodoroTimer: React.FC = () => {
   }
 
   return (
-    <div className="w-96 text-center">
-      <h2 className="text-2xl font-bold mb-6">Pomodoro Timer</h2>
+    <>
+      {/* Phase Completion Notification */}
+      {showPhaseNotification && lastCompletedPhase && (
+        <PhaseNotification
+          phase={currentPhase}
+          round={currentRound}
+          onDismiss={dismissNotification}
+        />
+      )}
 
-      {/* Progress Dots */}
-      <div className="flex justify-center gap-2 mb-6">
-        {timerState.completedRounds.map((completed, index) => (
-          <div
-            key={index}
-            className={`w-3 h-3 rounded-full transition-colors ${
-              completed ? 'bg-gray-900' : 'bg-gray-300'
-            }`}
-          />
-        ))}
-      </div>
+      <div className="w-full max-w-sm sm:max-w-md lg:max-w-lg mx-auto text-center px-4">
+        <h2 className="text-2xl font-bold mb-6">Pomodoro Timer</h2>
 
-      {/* Phase Label */}
-      <div className="mb-4">
-        <span className="text-sm font-medium text-gray-600">
-          Round {timerState.currentRound} - {getPhaseLabel()}
-        </span>
-      </div>
+        {/* Enhanced Progress Indicator */}
+        <TimerProgress
+          currentRound={currentRound}
+          completedRounds={completedRounds}
+          currentPhase={currentPhase}
+          className="mb-8"
+        />
 
-      {/* Timer Display */}
-      <div className="mb-8">
-        <div className="text-6xl font-mono font-bold text-gray-900">
-          {formatTime(timerState.timeRemaining)}
+        {/* Phase Label */}
+        <div className="mb-6">
+          <span className="text-sm font-medium text-gray-600">
+            Round {currentRound} - {getPhaseLabel()}
+          </span>
         </div>
-      </div>
 
-      {/* Controls */}
-      <div className="flex justify-center gap-4">
-        {!timerState.isActive ? (
-          <button onClick={startTimer} className="btn-primary flex items-center gap-2">
-            <Play size={16} />
-            Start
+        {/* Enhanced Timer Display */}
+        <TimerDisplay
+          timeRemainingMs={timeRemainingMs}
+          currentPhase={currentPhase}
+          status={status}
+          className="mb-8"
+        />
+
+        {/* Controls */}
+        <div className="flex justify-center gap-4">
+          {status === 'idle' || status === 'completed' ? (
+            <button onClick={startTimer} className="btn-primary flex items-center gap-2">
+              <Play size={16} />
+              Start
+            </button>
+          ) : status === 'paused' ? (
+            <button onClick={resumeTimer} className="btn-primary flex items-center gap-2">
+              <Play size={16} />
+              Resume
+            </button>
+          ) : (
+            <button onClick={pauseTimer} className="btn-secondary flex items-center gap-2">
+              <Pause size={16} />
+              Pause
+            </button>
+          )}
+
+          <button onClick={stopTimer} className="btn-secondary flex items-center gap-2">
+            <Square size={16} />
+            Stop
           </button>
-        ) : timerState.isPaused ? (
-          <button onClick={resumeTimer} className="btn-primary flex items-center gap-2">
-            <Play size={16} />
-            Resume
+
+          <button onClick={resetSession} className="btn-secondary flex items-center gap-2">
+            <RotateCcw size={16} />
+            Reset
           </button>
-        ) : (
-          <button onClick={pauseTimer} className="btn-secondary flex items-center gap-2">
-            <Pause size={16} />
-            Pause
-          </button>
+        </div>
+
+        {/* Simple Manual Phase Transition */}
+        {(status === 'running' || status === 'paused') && (
+          <div className="mt-4">
+            <button
+              onClick={() => {
+                if (status === 'running') {
+                  stopTimer()
+                }
+                const { handlePhaseComplete } = useTimerStore.getState()
+                handlePhaseComplete()
+              }}
+              className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              Skip to next phase
+            </button>
+          </div>
         )}
 
-        <button onClick={stopTimer} className="btn-secondary flex items-center gap-2">
-          <Square size={16} />
-          Stop
-        </button>
-
-        <button onClick={resetTimer} className="btn-secondary flex items-center gap-2">
-          <RotateCcw size={16} />
-          Reset
-        </button>
-      </div>
-
-      {/* Duration Settings */}
-      <div className="mt-8 pt-6 border-t border-gray-200">
-        <h3 className="text-lg font-semibold mb-4">Duration Settings</h3>
-        <div className="grid grid-cols-3 gap-4 text-sm">
-          <div>
-            <label className="block font-medium mb-1">Study</label>
-            <input
-              type="number"
-              min="1"
-              max="60"
-              value={timerState.studyDuration}
-              onChange={e =>
-                setTimerState(prev => ({
-                  ...prev,
-                  studyDuration: parseInt(e.target.value) || 25,
-                }))
-              }
-              className="w-full px-2 py-1 border border-gray-300 rounded"
-            />
-          </div>
-          <div>
-            <label className="block font-medium mb-1">Short Break</label>
-            <input
-              type="number"
-              min="1"
-              max="30"
-              value={timerState.shortBreakDuration}
-              onChange={e =>
-                setTimerState(prev => ({
-                  ...prev,
-                  shortBreakDuration: parseInt(e.target.value) || 5,
-                }))
-              }
-              className="w-full px-2 py-1 border border-gray-300 rounded"
-            />
-          </div>
-          <div>
-            <label className="block font-medium mb-1">Long Break</label>
-            <input
-              type="number"
-              min="1"
-              max="60"
-              value={timerState.longBreakDuration}
-              onChange={e =>
-                setTimerState(prev => ({
-                  ...prev,
-                  longBreakDuration: parseInt(e.target.value) || 15,
-                }))
-              }
-              className="w-full px-2 py-1 border border-gray-300 rounded"
-            />
-          </div>
+        {/* Enhanced Timer Settings */}
+        <div className="mt-8 pt-6 border-t border-gray-200 relative">
+          <TimerSettingsPanel />
         </div>
       </div>
-    </div>
+    </>
   )
 }
 
