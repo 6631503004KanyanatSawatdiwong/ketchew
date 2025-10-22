@@ -19,6 +19,8 @@ export interface TodoItem {
   createdAt: string
   completedAt?: string
   pomodorosSessions?: number
+  priority?: 'low' | 'medium' | 'high'
+  category?: string
 }
 
 export interface BackgroundOption {
