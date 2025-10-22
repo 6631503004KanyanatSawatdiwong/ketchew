@@ -89,3 +89,22 @@ export interface ProgressData {
 }
 
 export type PopupType = 'timer' | 'tasks' | 'notes' | 'background' | 'audio' | null
+
+// Multi-popup interface types
+export interface PopupInstance {
+  id: string
+  type: Exclude<PopupType, null>
+  position: { x: number; y: number }
+  size: { width: number; height: number }
+  isMinimized: boolean
+  zIndex: number
+  isDragging: boolean
+  isResizing: boolean
+}
+
+export interface PopupManagerState {
+  popups: PopupInstance[]
+  maxZIndex: number
+  dragOffset: { x: number; y: number }
+  activePopupId: string | null
+}

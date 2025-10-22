@@ -36,4 +36,94 @@
   .popup-container {
     @apply bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden animate-popup-enter;
   }
+
+  /* Multi-popup system styles */
+  .popup-window {
+    position: absolute;
+    border-radius: var(--radius-2xl);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    pointer-events: auto;
+    min-width: 320px;
+    min-height: 200px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .dark .popup-window {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .popup-window.dragging {
+    user-select: none;
+    box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.35);
+    transform: scale(1.02);
+    transition: none;
+  }
+
+  .popup-window.minimized {
+    min-height: 40px;
+    height: auto !important;
+  }
+
+  .popup-header {
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    border-top-left-radius: var(--radius-2xl);
+    border-top-right-radius: var(--radius-2xl);
+  }
+
+  .popup-header:active {
+    cursor: grabbing;
+  }
+
+  .popup-control-button {
+    transition: all 0.2s ease;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .popup-control-button:hover {
+    transform: scale(1.1);
+  }
+
+  .popup-content {
+    background: white;
+    border-bottom-left-radius: var(--radius-2xl);
+    border-bottom-right-radius: var(--radius-2xl);
+  }
+
+  /* Auto-cascade positioning classes */
+  .popup-window:nth-child(1) {
+    --cascade-x: 10%;
+    --cascade-y: 15%;
+  }
+  .popup-window:nth-child(2) {
+    --cascade-x: 15%;
+    --cascade-y: 20%;
+  }
+  .popup-window:nth-child(3) {
+    --cascade-x: 20%;
+    --cascade-y: 25%;
+  }
+  .popup-window:nth-child(4) {
+    --cascade-x: 25%;
+    --cascade-y: 30%;
+  }
+  .popup-window:nth-child(5) {
+    --cascade-x: 30%;
+    --cascade-y: 35%;
+  }
+
+  /* Focus highlight */
+  .popup-window:focus-within {
+    box-shadow:
+      0 25px 50px -12px rgba(0, 0, 0, 0.25),
+      0 0 0 2px rgba(59, 130, 246, 0.3);
+  }
 }

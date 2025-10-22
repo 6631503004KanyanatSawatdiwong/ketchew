@@ -31,6 +31,46 @@
 
 ## Development Phases
 
+### Phase 0: Multi-Popup Interface Foundation (Week 2)
+
+**Goal**: Implement FR00 - Multi-popup draggable interface system
+
+#### Core UI Architecture (FR00.1-FR00.3)
+
+- [x] **Multi-Popup Interface System (FR00.1)**
+  - Multiple popups (Timer, Tasks, Notes) open simultaneously
+  - Each popup operates independently
+  - Maximum 5 popups to prevent UI clutter
+  - Clear visual layering when popups overlap
+
+- [x] **Draggable Popup Functionality (FR00.2)**
+  - Click and drag on popup header to move window
+  - Popups constrained to viewport boundaries
+  - Smooth drag animation with visual feedback
+  - Popup position persisted during session
+
+- [x] **Popup Window Management (FR00.3)**
+  - Auto-cascade positioning for new popups
+  - Bring-to-front functionality when clicking popup
+  - Z-index management for proper layering
+  - Minimize/restore functionality for each popup
+
+**Technical Implementation**:
+
+- [x] DraggablePopup component with HTML5 drag API
+- [x] PopupManager for state management and positioning
+- [x] CSS transforms for smooth drag animations
+- [x] SessionStorage for position persistence
+
+**Deliverables**:
+
+- [x] Multi-popup interface system fully operational
+- [x] Draggable popup functionality with smooth animations
+- [x] Professional window management (minimize, focus, cascade)
+- [x] Keyboard shortcuts and help system
+- [x] Session persistence for popup positions
+- [x] Complete TypeScript integration
+
 ### Phase 1: Foundation Setup (Weeks 1-2)
 
 **Goal**: Project infrastructure and basic UI framework
@@ -43,19 +83,24 @@
 - [x] Create basic folder structure and components
 - [x] Implement responsive grid layout with sticky sidebar
 
-#### Week 2: Core UI Components
+#### Week 2: Multi-Popup Interface System (FR00)
 
-- [ ] Build popup overlay system for all features
-- [ ] Create sidebar navigation component
-- [ ] Design and implement basic theme system
-- [ ] Set up LocalStorage utilities and hooks
-- [ ] Create basic routing for popup states
+- [x] Build multi-popup manager component (FR00.1)
+- [x] Implement draggable popup functionality (FR00.2)
+- [x] Create popup window management system (FR00.3)
+- [x] Design cascade positioning and z-index layering
+- [x] Create sidebar navigation component
+- [x] Set up LocalStorage utilities and hooks
+- [x] Add session persistence for popup positions
+- [x] ~~Design and implement basic theme system~~ (Reverted - cleaner original design preferred)
 
 **Deliverables**:
 
-- Working React app with TailwindCSS
-- Popup-based navigation system
-- LocalStorage integration ready
+- [x] Working React app with TailwindCSS
+- [x] Multi-popup draggable interface system
+- [x] Timer, Tasks, and Notes popups can be open simultaneously
+- [x] LocalStorage integration ready
+- [x] Clean, minimalist interface design (theme system reverted per user feedback)
 
 ### Phase 2: Pomodoro Timer Core (Weeks 3-5)
 
@@ -308,6 +353,9 @@
 
 ### NFR Compliance Checklist
 
+- [ ] FR00.1: Multi-popup interface system (simultaneous popups)
+- [ ] FR00.2: Draggable popup functionality (smooth drag with constraints)
+- [ ] FR00.3: Popup window management (cascade positioning, z-index)
 - [ ] NFR01: Timer accuracy <1s drift
 - [ ] NFR02: Chat latency ≤300ms
 - [ ] NFR03: 10 concurrent users per session
@@ -367,6 +415,9 @@
 
 ### User Experience Metrics
 
+- [ ] Multi-popup interface working smoothly with drag functionality
+- [ ] Multiple popups (Timer, Tasks, Notes) can be open simultaneously
+- [ ] Popup positioning and z-index management working correctly
 - [ ] Timer accuracy within specification
 - [ ] Responsive design across all target devices
 - [ ] Intuitive UI requiring minimal learning

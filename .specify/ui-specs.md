@@ -196,7 +196,162 @@
 }
 ```
 
-### Popup Overlay System
+### Multi-Popup Overlay System
+
+```css
+.popup-manager {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none; /* Allow interaction with desktop behind */
+}
+
+.popup-window {
+  position: absolute;
+  background: white;
+  border-radius: var(--radius-2xl);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  pointer-events: auto;
+  min-width: 320px;
+  min-height: 200px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: popupEnter 0.2s ease-out;
+  resize: both;
+}
+
+.popup-window.dragging {
+  user-select: none;
+  box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.35);
+  transform: scale(1.02);
+}
+
+.popup-header {
+  background: var(--color-gray-50);
+  border-bottom: 1px solid var(--color-gray-200);
+  padding: var(--space-3) var(--space-4);
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+
+.popup-header:active {
+  cursor: grabbing;
+}
+
+.popup-title {
+  font-weight: var(--font-semibold);
+  color: var(--color-gray-900);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.popup-controls {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.popup-control-button {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-base);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.popup-control-button.minimize {
+  background: var(--color-warning-100);
+  color: var(--color-warning-600);
+}
+
+.popup-control-button.minimize:hover {
+  background: var(--color-warning-200);
+}
+
+.popup-control-button.close {
+  background: var(--color-error-100);
+  color: var(--color-error-600);
+}
+
+.popup-control-button.close:hover {
+  background: var(--color-error-200);
+}
+
+.popup-content {
+  padding: var(--space-6);
+  overflow: auto;
+  height: calc(100% - 60px); /* Account for header */
+}
+
+/* Cascade positioning for new popups */
+.popup-window:nth-child(1) {
+  top: 10%;
+  left: 15%;
+}
+
+.popup-window:nth-child(2) {
+  top: 15%;
+  left: 20%;
+}
+
+.popup-window:nth-child(3) {
+  top: 20%;
+  left: 25%;
+}
+
+.popup-window:nth-child(4) {
+  top: 25%;
+  left: 30%;
+}
+
+.popup-window:nth-child(5) {
+  top: 30%;
+  left: 35%;
+}
+
+/* Minimized popup state */
+.popup-window.minimized {
+  height: 60px !important;
+  overflow: hidden;
+  transition: height 0.3s ease;
+}
+
+.popup-window.minimized .popup-content {
+  display: none;
+}
+
+/* Focus and layering */
+.popup-window.focused {
+  z-index: 110;
+  box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.3);
+}
+
+.popup-window:not(.focused) {
+  z-index: 105;
+}
+
+@keyframes popupEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+```
+
+### Single Popup Overlay System (Legacy)
 
 ```css
 .popup-overlay {

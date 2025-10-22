@@ -1,5 +1,48 @@
 # Ketchew - Detailed Functional Requirements (FRs)
 
+## Core UI System Requirements
+
+### FR00.1: Multi-Popup Interface System
+
+**Requirement**: System shall support multiple simultaneous popup windows
+
+- **Description**: Users can open and interact with multiple feature popups at the same time
+- **Acceptance Criteria**:
+  - Multiple popups (Timer, Tasks, Notes) can be open simultaneously
+  - Each popup operates independently without interference
+  - Maximum 5 popups open at once to prevent UI clutter
+  - Clear visual layering when popups overlap
+- **Priority**: High
+- **Dependencies**: None
+
+### FR00.2: Draggable Popup Functionality
+
+**Requirement**: System shall provide draggable popup windows
+
+- **Description**: All popup windows can be moved around the screen via drag and drop
+- **Acceptance Criteria**:
+  - Click and drag on popup header to move window
+  - Popups constrained to viewport boundaries
+  - Smooth drag animation with visual feedback
+  - Popup position persisted during session
+  - Auto-positioning when opened to avoid overlap
+- **Priority**: High
+- **Dependencies**: FR00.1
+
+### FR00.3: Popup Window Management
+
+**Requirement**: System shall manage popup window states and positioning
+
+- **Description**: Intelligent popup positioning and state management
+- **Acceptance Criteria**:
+  - Auto-cascade positioning for new popups
+  - Bring-to-front functionality when clicking popup
+  - Z-index management for proper layering
+  - Minimize/restore functionality for each popup
+  - Close individual popups without affecting others
+- **Priority**: High
+- **Dependencies**: FR00.1, FR00.2
+
 ## FR01: Pomodoro Timer System
 
 ### FR01.1: Timer Cycle Implementation

@@ -1,4 +1,181 @@
-# Ketchew - Component Specifications (Simplified Architecture)
+# Ketchew - Component Specifications (Multi-Popup Architecture)
+
+## 0. Multi-Popup Manager Component
+
+### State Management (React State)
+
+```javascript
+const [openPopups, setOpenPopups] = useState([])
+const [focusedPopupId, setFocusedPopupId] = useState(null)
+const [nextZIndex, setNextZIndex] = useState(100)
+
+// Popup structure
+const popupInstance = {
+  id: crypto.randomUUID(),
+  type: 'timer', // 'timer' | 'tasks' | 'notes' | 'background' | 'audio'
+  position: { x: 100, y: 100 },
+  size: { width: 400, height: 500 },
+  isMinimized: false,
+  zIndex: 100,
+  isDragging: false,
+}
+```
+
+### Popup Management Functions
+
+```javascript
+// Open new popup with auto-positioning
+const openPopup = type => {
+  const newPosition = calculateCascadePosition(openPopups.length)
+  const newPopup = {
+    id: crypto.randomUUID(),
+    type,
+    position: newPosition,
+    size: getDefaultSize(type),
+    isMinimized: false,
+    zIndex: nextZIndex,
+    isDragging: false,
+  }
+
+  setOpenPopups([...openPopups, newPopup])
+  setFocusedPopupId(newPopup.id)
+  setNextZIndex(nextZIndex + 1)
+}
+
+// Close specific popup
+const closePopup = popupId => {
+  setOpenPopups(openPopups.filter(popup => popup.id !== popupId))
+  if (focusedPopupId === popupId) {
+    const remaining = openPopups.filter(popup => popup.id !== popupId)
+    setFocusedPopupId(remaining.length > 0 ? remaining[remaining.length - 1].id : null)
+  }
+}
+
+// Bring popup to front
+const focusPopup = popupId => {
+  setFocusedPopupId(popupId)
+  setOpenPopups(
+    openPopups.map(popup => (popup.id === popupId ? { ...popup, zIndex: nextZIndex } : popup))
+  )
+  setNextZIndex(nextZIndex + 1)
+}
+
+// Update popup position during drag
+const updatePopupPosition = (popupId, newPosition) => {
+  setOpenPopups(
+    openPopups.map(popup => (popup.id === popupId ? { ...popup, position: newPosition } : popup))
+  )
+}
+
+// Auto-cascade positioning
+const calculateCascadePosition = index => {
+  const offset = index * 30
+  return {
+    x: 100 + offset,
+    y: 100 + offset,
+  }
+}
+```
+
+### Drag and Drop Implementation
+
+```javascript
+import { useDrag } from 'react-dnd'
+
+const DraggablePopup = ({ popup, children, onDrag, onFocus }) => {
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+
+  const handleMouseDown = e => {
+    if (e.target.closest('.popup-header')) {
+      setIsDragging(true)
+      setDragStart({
+        x: e.clientX - popup.position.x,
+        y: e.clientY - popup.position.y,
+      })
+      onFocus(popup.id)
+    }
+  }
+
+  const handleMouseMove = e => {
+    if (isDragging) {
+      const newPosition = {
+        x: Math.max(0, Math.min(e.clientX - dragStart.x, window.innerWidth - popup.size.width)),
+        y: Math.max(0, Math.min(e.clientY - dragStart.y, window.innerHeight - popup.size.height)),
+      }
+      onDrag(popup.id, newPosition)
+    }
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
+
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+      }
+    }
+  }, [isDragging, dragStart])
+
+  return (
+    <div
+      className={`popup-window ${isDragging ? 'dragging' : ''} ${popup.id === focusedPopupId ? 'focused' : ''}`}
+      style={{
+        left: popup.position.x,
+        top: popup.position.y,
+        width: popup.size.width,
+        height: popup.isMinimized ? 60 : popup.size.height,
+        zIndex: popup.zIndex,
+      }}
+      onMouseDown={handleMouseDown}
+      onClick={() => onFocus(popup.id)}
+    >
+      {children}
+    </div>
+  )
+}
+```
+
+## 1. Enhanced Sidebar Navigation Component
+
+### Updated Structure for Multi-Popup Support
+
+```javascript
+const navigationTabs = [
+  { id: 'timer', label: 'Timer', icon: ClockIcon, component: PomodoroTimer },
+  { id: 'tasks', label: 'Tasks', icon: ListBulletIcon, component: TodoList },
+  { id: 'notes', label: 'Notes', icon: DocumentTextIcon, component: NotesEditor },
+  { id: 'background', label: 'Background', icon: PhotoIcon, component: BackgroundSelector },
+  { id: 'audio', label: 'Audio', icon: SpeakerWaveIcon, component: SoundSelector },
+]
+
+const Sidebar = ({ openPopups, onOpenPopup }) => {
+  const isPopupOpen = type => {
+    return openPopups.some(popup => popup.type === type)
+  }
+
+  return (
+    <div className="sidebar">
+      {navigationTabs.map(tab => (
+        <button
+          key={tab.id}
+          className={`sidebar-tab ${isPopupOpen(tab.id) ? 'active' : ''}`}
+          onClick={() => onOpenPopup(tab.id)}
+          disabled={isPopupOpen(tab.id)}
+        >
+          <tab.icon className="w-6 h-6" />
+          <span className="sr-only">{tab.label}</span>
+        </button>
+      ))}
+    </div>
+  )
+}
+```
 
 ## 1. Pomodoro Timer Component
 
@@ -344,31 +521,149 @@ interface UserPreferences {
 }
 ```
 
-## 9. Main Layout Component
+## 9. Enhanced Main Layout Component
 
-### Structure
+### Multi-Popup Architecture
 
-- Desktop-style background
-- Fixed sidebar navigation
-- Popup overlay system
-- Header with collaboration controls
-- Responsive design
+```javascript
+const App = () => {
+  const [openPopups, setOpenPopups] = useState([])
+  const [focusedPopupId, setFocusedPopupId] = useState(null)
+  const [nextZIndex, setNextZIndex] = useState(100)
 
-### Popup System
+  const popupComponents = {
+    timer: PomodoroTimer,
+    tasks: TodoList,
+    notes: NotesEditor,
+    background: BackgroundSelector,
+    audio: SoundSelector,
+  }
 
-```typescript
-interface PopupState {
-  activeTab: string | null
-  isOpen: boolean
-  content: React.ComponentType | null
+  return (
+    <div className="app-container">
+      <DesktopInterface />
+
+      <Sidebar openPopups={openPopups} onOpenPopup={openPopup} />
+
+      <div className="popup-manager">
+        {openPopups.map(popup => {
+          const Component = popupComponents[popup.type]
+          return (
+            <DraggablePopup
+              key={popup.id}
+              popup={popup}
+              onDrag={updatePopupPosition}
+              onFocus={focusPopup}
+            >
+              <div className="popup-header">
+                <div className="popup-title">
+                  <TabIcon type={popup.type} />
+                  {getTabLabel(popup.type)}
+                </div>
+                <div className="popup-controls">
+                  <button
+                    className="popup-control-button minimize"
+                    onClick={() => toggleMinimize(popup.id)}
+                  >
+                    {popup.isMinimized ? '□' : '_'}
+                  </button>
+                  <button
+                    className="popup-control-button close"
+                    onClick={() => closePopup(popup.id)}
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+
+              {!popup.isMinimized && (
+                <div className="popup-content">
+                  <Component />
+                </div>
+              )}
+            </DraggablePopup>
+          )
+        })}
+      </div>
+    </div>
+  )
 }
 ```
 
-## 10. Global State Management
+### Popup State Management
 
-### Zustand Store Structure
+```javascript
+// Enhanced popup state with position persistence
+const usePopupManager = () => {
+  const [openPopups, setOpenPopups] = useState(() => {
+    // Load popup positions from sessionStorage
+    const saved = sessionStorage.getItem('ketchew_popup_positions')
+    return saved ? JSON.parse(saved) : []
+  })
+
+  // Save popup positions on change
+  useEffect(() => {
+    sessionStorage.setItem('ketchew_popup_positions', JSON.stringify(openPopups))
+  }, [openPopups])
+
+  // Keyboard shortcuts for popup management
+  useEffect(() => {
+    const handleKeyDown = e => {
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case '1':
+            e.preventDefault()
+            togglePopup('timer')
+            break
+          case '2':
+            e.preventDefault()
+            togglePopup('tasks')
+            break
+          case '3':
+            e.preventDefault()
+            togglePopup('notes')
+            break
+          case 'w':
+            if (focusedPopupId) {
+              e.preventDefault()
+              closePopup(focusedPopupId)
+            }
+            break
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [focusedPopupId])
+
+  return {
+    openPopups,
+    focusedPopupId,
+    openPopup,
+    closePopup,
+    focusPopup,
+    updatePopupPosition,
+    toggleMinimize,
+  }
+}
+```
+
+## 10. Enhanced Global State Management
+
+### Multi-Popup State Structure
 
 ```typescript
+interface PopupInstance {
+  id: string
+  type: 'timer' | 'tasks' | 'notes' | 'background' | 'audio'
+  position: { x: number; y: number }
+  size: { width: number; height: number }
+  isMinimized: boolean
+  zIndex: number
+  isDragging: boolean
+}
+
 interface AppState {
   user: User | null
   pomodoro: PomodoroState
@@ -383,17 +678,156 @@ interface AppState {
   progress: ProgressState
   notes: NotesState
   ui: {
-    activePopup: string | null
+    openPopups: PopupInstance[]
+    focusedPopupId: string | null
+    nextZIndex: number
     theme: 'light' | 'dark'
   }
 }
 ```
 
-### Actions
+### Multi-Popup Actions
 
-- Timer controls (start, pause, reset, switchPhase)
-- Todo management (add, update, delete, toggle)
-- Collaboration (createSession, joinSession, sendMessage)
-- Customization (setBackground, setSound, toggleSound)
-- Progress tracking (updateStats, setGoals)
-- UI controls (openPopup, closePopup, setTheme)
+```typescript
+interface PopupActions {
+  // Popup management
+  openPopup: (type: string) => void
+  closePopup: (popupId: string) => void
+  focusPopup: (popupId: string) => void
+  toggleMinimize: (popupId: string) => void
+  updatePopupPosition: (popupId: string, position: { x: number; y: number }) => void
+  updatePopupSize: (popupId: string, size: { width: number; height: number }) => void
+
+  // Bulk operations
+  closeAllPopups: () => void
+  minimizeAllPopups: () => void
+  restoreAllPopups: () => void
+  cascadePopups: () => void
+
+  // Session management
+  savePopupLayout: () => void
+  restorePopupLayout: () => void
+}
+```
+
+### Enhanced Hook Implementation
+
+```typescript
+const useMultiPopupStore = create<AppState & PopupActions>((set, get) => ({
+  // State
+  ui: {
+    openPopups: [],
+    focusedPopupId: null,
+    nextZIndex: 100,
+    theme: 'light',
+  },
+
+  // Actions
+  openPopup: type => {
+    const { ui } = get()
+    const existingPopup = ui.openPopups.find(popup => popup.type === type)
+
+    if (existingPopup) {
+      // Focus existing popup instead of opening new one
+      get().focusPopup(existingPopup.id)
+      return
+    }
+
+    const newPopup: PopupInstance = {
+      id: crypto.randomUUID(),
+      type,
+      position: calculateCascadePosition(ui.openPopups.length),
+      size: getDefaultSize(type),
+      isMinimized: false,
+      zIndex: ui.nextZIndex,
+      isDragging: false,
+    }
+
+    set(state => ({
+      ui: {
+        ...state.ui,
+        openPopups: [...state.ui.openPopups, newPopup],
+        focusedPopupId: newPopup.id,
+        nextZIndex: state.ui.nextZIndex + 1,
+      },
+    }))
+  },
+
+  closePopup: popupId => {
+    set(state => {
+      const remainingPopups = state.ui.openPopups.filter(popup => popup.id !== popupId)
+      const newFocusedId =
+        state.ui.focusedPopupId === popupId
+          ? remainingPopups.length > 0
+            ? remainingPopups[remainingPopups.length - 1].id
+            : null
+          : state.ui.focusedPopupId
+
+      return {
+        ui: {
+          ...state.ui,
+          openPopups: remainingPopups,
+          focusedPopupId: newFocusedId,
+        },
+      }
+    })
+  },
+
+  focusPopup: popupId => {
+    set(state => ({
+      ui: {
+        ...state.ui,
+        focusedPopupId: popupId,
+        openPopups: state.ui.openPopups.map(popup =>
+          popup.id === popupId ? { ...popup, zIndex: state.ui.nextZIndex } : popup
+        ),
+        nextZIndex: state.ui.nextZIndex + 1,
+      },
+    }))
+  },
+
+  updatePopupPosition: (popupId, position) => {
+    set(state => ({
+      ui: {
+        ...state.ui,
+        openPopups: state.ui.openPopups.map(popup =>
+          popup.id === popupId ? { ...popup, position } : popup
+        ),
+      },
+    }))
+  },
+
+  closeAllPopups: () => {
+    set(state => ({
+      ui: {
+        ...state.ui,
+        openPopups: [],
+        focusedPopupId: null,
+      },
+    }))
+  },
+
+  cascadePopups: () => {
+    set(state => ({
+      ui: {
+        ...state.ui,
+        openPopups: state.ui.openPopups.map((popup, index) => ({
+          ...popup,
+          position: calculateCascadePosition(index),
+        })),
+      },
+    }))
+  },
+}))
+```
+
+This enhanced specification supports:
+
+- **Multiple simultaneous popups** for Timer, Tasks, and Notes
+- **Drag and drop functionality** with viewport constraints
+- **Auto-cascade positioning** to prevent overlap
+- **Focus management** with proper z-index layering
+- **Minimize/restore functionality** for each popup
+- **Keyboard shortcuts** for quick popup access
+- **Session persistence** for popup positions
+- **Responsive behavior** on different screen sizes

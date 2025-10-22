@@ -18,6 +18,7 @@ session_memory = "Collaboration data in server memory only"
 no_database = "Simplified architecture without persistent backend storage"
 
 [functional_requirements]
+fr00_multi_popup_system = "Multiple simultaneous draggable popup windows"
 fr01_timer_system = "Core pomodoro timer with 4-round cycle"
 fr02_task_management = "CRUD operations for todo list"
 fr03_collaboration = "Real-time shared sessions with chat"
@@ -28,8 +29,10 @@ fr06_notes_system = "Session-based note-taking"
 [ui_framework]
 design_system = "Custom design with Tailwind"
 component_library = "React built-in components"
+popup_system = "Multi-popup draggable interface"
 icons = "Heroicons or Lucide React"
 responsive = true
+drag_drop = "Native HTML5 drag and drop with React hooks"
 
 [nfr_compliance]
 timer_accuracy = "<1s drift"
