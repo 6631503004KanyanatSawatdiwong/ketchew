@@ -6,6 +6,9 @@ import TodoList from './TodoList'
 import NotesEditor from './NotesEditor'
 import BackgroundSelector from './BackgroundSelector'
 import SoundSelector from './SoundSelector'
+import ThemeSelector from './ThemeSelector'
+import AudioMixer from './AudioMixer'
+import VisualCustomization from './VisualCustomization'
 
 interface PopupManagerProps {
   onPopupStateChange?: (popups: PopupInstance[]) => void
@@ -91,6 +94,12 @@ const PopupManager: React.FC<PopupManagerProps> = ({ onPopupStateChange }) => {
             return { width: 600, height: 450 }
           case 'audio':
             return { width: 400, height: 300 }
+          case 'theme':
+            return { width: 500, height: 400 }
+          case 'mixer':
+            return { width: 700, height: 600 }
+          case 'visual':
+            return { width: 800, height: 700 }
           default:
             return { width: 400, height: 300 }
         }
@@ -172,6 +181,12 @@ const PopupManager: React.FC<PopupManagerProps> = ({ onPopupStateChange }) => {
         return <BackgroundSelector />
       case 'audio':
         return <SoundSelector />
+      case 'theme':
+        return <ThemeSelector />
+      case 'mixer':
+        return <AudioMixer />
+      case 'visual':
+        return <VisualCustomization />
       default:
         return <div>Unknown popup type</div>
     }

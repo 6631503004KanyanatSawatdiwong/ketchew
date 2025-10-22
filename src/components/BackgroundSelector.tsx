@@ -1,245 +1,315 @@
-import React, { useCallback } from 'react'
+import React, { useState } from 'react'
+import { Search, Eye, Heart, Download, RotateCcw, Monitor } from 'lucide-react'
 import { useLocalStorage } from '../hooks/useLocalStorage'
-
-interface BackgroundOption {
-  id: string
-  name: string
-  thumbnail: string
-  url: string
-  category: 'nature' | 'abstract' | 'minimal' | 'workspace'
-}
-
-const backgroundOptions: BackgroundOption[] = [
-  // Nature
-  {
-    id: 'forest',
-    name: 'Forest Path',
-    thumbnail:
-      'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=150&h=100&fit=crop&auto=format',
-    url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&h=1080&fit=crop&auto=format',
-    category: 'nature',
-  },
-  {
-    id: 'mountains',
-    name: 'Mountain Lake',
-    thumbnail:
-      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=150&h=100&fit=crop&auto=format',
-    url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=1080&fit=crop&auto=format',
-    category: 'nature',
-  },
-  {
-    id: 'ocean',
-    name: 'Ocean Waves',
-    thumbnail:
-      'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=150&h=100&fit=crop&auto=format',
-    url: 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=1920&h=1080&fit=crop&auto=format',
-    category: 'nature',
-  },
-
-  // Abstract
-  {
-    id: 'gradient1',
-    name: 'Purple Gradient',
-    thumbnail:
-      'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=150&h=100&fit=crop&auto=format',
-    url: 'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=1920&h=1080&fit=crop&auto=format',
-    category: 'abstract',
-  },
-  {
-    id: 'gradient2',
-    name: 'Blue Waves',
-    thumbnail:
-      'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=150&h=100&fit=crop&auto=format',
-    url: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=1920&h=1080&fit=crop&auto=format',
-    category: 'abstract',
-  },
-
-  // Minimal
-  {
-    id: 'minimal1',
-    name: 'Clean White',
-    thumbnail:
-      'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDE1MCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE1MCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNmOWZhZmIiLz48L3N2Zz4=',
-    url: '',
-    category: 'minimal',
-  },
-  {
-    id: 'minimal2',
-    name: 'Soft Gray',
-    thumbnail:
-      'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDE1MCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE1MCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNmM2Y0ZjYiLz48L3N2Zz4=',
-    url: '',
-    category: 'minimal',
-  },
-
-  // Workspace
-  {
-    id: 'workspace1',
-    name: 'Coffee Shop',
-    thumbnail:
-      'https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=150&h=100&fit=crop&auto=format',
-    url: 'https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=1920&h=1080&fit=crop&auto=format',
-    category: 'workspace',
-  },
-  {
-    id: 'workspace2',
-    name: 'Modern Office',
-    thumbnail:
-      'https://images.unsplash.com/photo-1497366216548-37526070297c?w=150&h=100&fit=crop&auto=format',
-    url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&h=1080&fit=crop&auto=format',
-    category: 'workspace',
-  },
-]
+import {
+  BACKGROUND_LIBRARY,
+  BACKGROUND_CATEGORIES,
+  getBackgroundsByCategory,
+  getRandomBackground,
+  searchBackgrounds,
+  BackgroundImage,
+} from '../data/backgroundLibrary'
 
 const BackgroundSelector: React.FC = () => {
-  const [selectedBackground, setSelectedBackground] = useLocalStorage<string>(
-    'ketchew_background',
-    'minimal1'
+  const [selectedBackground, setSelectedBackground] = useLocalStorage<string | null>(
+    'selectedBackground',
+    null
   )
-  const [selectedCategory, setSelectedCategory] = React.useState<string>('all')
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [searchQuery, setSearchQuery] = useState<string>('')
+  const [favorites, setFavorites] = useLocalStorage<string[]>('favoriteBackgrounds', [])
+  const [previewBackground, setPreviewBackground] = useState<string | null>(null)
 
-  const categories = [
-    { id: 'all', name: 'All' },
-    { id: 'nature', name: 'Nature' },
-    { id: 'abstract', name: 'Abstract' },
-    { id: 'minimal', name: 'Minimal' },
-    { id: 'workspace', name: 'Workspace' },
-  ]
+  // Get filtered backgrounds based on category and search
+  const getFilteredBackgrounds = (): BackgroundImage[] => {
+    const backgrounds = searchQuery
+      ? searchBackgrounds(searchQuery)
+      : getBackgroundsByCategory(selectedCategory)
 
-  const filteredBackgrounds =
-    selectedCategory === 'all'
-      ? backgroundOptions
-      : backgroundOptions.filter(bg => bg.category === selectedCategory)
+    return backgrounds
+  }
 
-  const applyBackground = useCallback(
-    (background: BackgroundOption) => {
-      setSelectedBackground(background.id)
+  const filteredBackgrounds = getFilteredBackgrounds()
+  const currentBackground = selectedBackground
+    ? BACKGROUND_LIBRARY.find(bg => bg.id === selectedBackground)
+    : null
 
-      // Apply background to body
-      const body = document.body
-      if (background.url) {
-        body.style.backgroundImage = `url(${background.url})`
-        body.style.backgroundSize = 'cover'
-        body.style.backgroundPosition = 'center'
-        body.style.backgroundRepeat = 'no-repeat'
-      } else {
-        // Handle minimal backgrounds with solid colors
-        body.style.backgroundImage = 'none'
-        if (background.id === 'minimal1') {
-          body.style.backgroundColor = '#f9fafb'
-        } else if (background.id === 'minimal2') {
-          body.style.backgroundColor = '#f3f4f6'
-        }
-      }
-    },
-    [setSelectedBackground]
-  )
+  const handleBackgroundSelect = (backgroundId: string) => {
+    setSelectedBackground(backgroundId)
+    setPreviewBackground(null)
 
-  // Apply saved background on component mount
-  React.useEffect(() => {
-    const savedBackground = backgroundOptions.find(bg => bg.id === selectedBackground)
-    if (savedBackground) {
-      applyBackground(savedBackground)
+    // Apply background immediately
+    const background = BACKGROUND_LIBRARY.find(bg => bg.id === backgroundId)
+    if (background) {
+      document.body.style.backgroundImage = `url(${background.imageUrl})`
+      document.body.style.backgroundSize = 'cover'
+      document.body.style.backgroundPosition = 'center'
+      document.body.style.backgroundRepeat = 'no-repeat'
+      document.body.style.backgroundAttachment = 'fixed'
     }
-  }, [selectedBackground, applyBackground])
+  }
+
+  const handleRandomBackground = () => {
+    const randomBg = getRandomBackground(selectedCategory === 'all' ? undefined : selectedCategory)
+    handleBackgroundSelect(randomBg.id)
+  }
+
+  const handleClearBackground = () => {
+    setSelectedBackground(null)
+    setPreviewBackground(null)
+    document.body.style.backgroundImage = ''
+  }
+
+  const toggleFavorite = (backgroundId: string) => {
+    setFavorites(prev =>
+      prev.includes(backgroundId) ? prev.filter(id => id !== backgroundId) : [...prev, backgroundId]
+    )
+  }
+
+  const handlePreview = (backgroundId: string) => {
+    if (previewBackground === backgroundId) {
+      setPreviewBackground(null)
+      return
+    }
+
+    setPreviewBackground(backgroundId)
+    const background = BACKGROUND_LIBRARY.find(bg => bg.id === backgroundId)
+    if (background) {
+      document.body.style.backgroundImage = `url(${background.imageUrl})`
+      document.body.style.backgroundSize = 'cover'
+      document.body.style.backgroundPosition = 'center'
+      document.body.style.backgroundRepeat = 'no-repeat'
+      document.body.style.backgroundAttachment = 'fixed'
+    }
+  }
+
+  // Apply current background on component mount
+  React.useEffect(() => {
+    if (currentBackground) {
+      document.body.style.backgroundImage = `url(${currentBackground.imageUrl})`
+      document.body.style.backgroundSize = 'cover'
+      document.body.style.backgroundPosition = 'center'
+      document.body.style.backgroundRepeat = 'no-repeat'
+      document.body.style.backgroundAttachment = 'fixed'
+    }
+  }, [currentBackground])
 
   return (
     <div className="w-96">
-      <h2 className="text-2xl font-bold mb-6">Background Settings</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold">Background Images</h2>
+        <div className="flex gap-2">
+          <button
+            onClick={handleRandomBackground}
+            className="p-2 text-gray-500 hover:text-gray-700 rounded"
+            title="Random Background"
+          >
+            <RotateCcw size={20} />
+          </button>
+          <button
+            onClick={handleClearBackground}
+            className="p-2 text-gray-500 hover:text-gray-700 rounded"
+            title="Clear Background"
+          >
+            <Monitor size={20} />
+          </button>
+        </div>
+      </div>
+
+      {/* Current Background Display */}
+      {currentBackground && (
+        <div className="mb-6 p-4 bg-white bg-opacity-90 backdrop-blur-sm border border-gray-200 rounded-lg">
+          <div className="flex items-center gap-3 mb-3">
+            <img
+              src={currentBackground.imageUrl}
+              alt={currentBackground.name}
+              className="w-16 h-12 object-cover rounded border"
+            />
+            <div className="flex-1">
+              <div className="font-medium">{currentBackground.name}</div>
+              <div className="text-sm text-gray-600">{currentBackground.description}</div>
+              <div className="text-xs text-gray-500 capitalize mt-1">
+                {currentBackground.category} • by {currentBackground.artist}
+              </div>
+            </div>
+            <button
+              onClick={() => toggleFavorite(currentBackground.id)}
+              className={`p-2 rounded ${
+                favorites.includes(currentBackground.id)
+                  ? 'text-red-500 hover:text-red-600'
+                  : 'text-gray-400 hover:text-red-500'
+              }`}
+              title="Toggle Favorite"
+            >
+              <Heart
+                size={16}
+                fill={favorites.includes(currentBackground.id) ? 'currentColor' : 'none'}
+              />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Search */}
+      <div className="mb-4">
+        <div className="relative">
+          <Search size={16} className="absolute left-3 top-3 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search backgrounds..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      </div>
 
       {/* Category Filter */}
       <div className="mb-6">
         <div className="flex flex-wrap gap-2">
-          {categories.map(category => (
+          {BACKGROUND_CATEGORIES.map(category => (
             <button
               key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
+              onClick={() => {
+                setSelectedCategory(category.id)
+                setSearchQuery('')
+              }}
               className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                 selectedCategory === category.id
                   ? 'bg-gray-900 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              {category.name}
+              {category.name} ({category.count})
             </button>
           ))}
         </div>
       </div>
 
       {/* Background Grid */}
-      <div className="grid grid-cols-2 gap-4 max-h-96 overflow-y-auto">
-        {filteredBackgrounds.map(background => (
-          <div
-            key={background.id}
-            className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all hover:scale-105 ${
-              selectedBackground === background.id
-                ? 'border-gray-900 ring-2 ring-gray-200'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
-            onClick={() => applyBackground(background)}
-          >
-            <img
-              src={background.thumbnail}
-              alt={background.name}
-              className="w-full h-20 object-cover"
-            />
-            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-2">
-              {background.name}
-            </div>
-            {selectedBackground === background.id && (
-              <div className="absolute top-2 right-2 w-4 h-4 bg-gray-900 rounded-full flex items-center justify-center">
-                <div className="w-2 h-2 bg-white rounded-full" />
-              </div>
+      <div className="space-y-4 max-h-96 overflow-y-auto">
+        {filteredBackgrounds.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <p>No backgrounds found</p>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="text-blue-500 hover:text-blue-600 text-sm mt-2"
+              >
+                Clear search
+              </button>
             )}
           </div>
-        ))}
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {filteredBackgrounds.map(background => (
+              <div
+                key={background.id}
+                className={`relative group cursor-pointer border-2 rounded-lg overflow-hidden transition-all ${
+                  selectedBackground === background.id
+                    ? 'border-blue-500 ring-2 ring-blue-200'
+                    : previewBackground === background.id
+                      ? 'border-yellow-500 ring-2 ring-yellow-200'
+                      : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="aspect-video">
+                  <img
+                    src={background.imageUrl}
+                    alt={background.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+
+                {/* Overlay with controls */}
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-200">
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handlePreview(background.id)}
+                        className={`p-2 rounded-full backdrop-blur-sm transition-colors ${
+                          previewBackground === background.id
+                            ? 'bg-yellow-500 text-white'
+                            : 'bg-white bg-opacity-90 text-gray-700 hover:bg-opacity-100'
+                        }`}
+                        title="Preview"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleBackgroundSelect(background.id)}
+                        className="p-2 bg-blue-500 text-white rounded-full backdrop-blur-sm hover:bg-blue-600 transition-colors"
+                        title="Apply Background"
+                      >
+                        <Download size={16} />
+                      </button>
+                      <button
+                        onClick={() => toggleFavorite(background.id)}
+                        className={`p-2 rounded-full backdrop-blur-sm transition-colors ${
+                          favorites.includes(background.id)
+                            ? 'bg-red-500 text-white'
+                            : 'bg-white bg-opacity-90 text-gray-700 hover:bg-opacity-100'
+                        }`}
+                        title="Toggle Favorite"
+                      >
+                        <Heart
+                          size={16}
+                          fill={favorites.includes(background.id) ? 'currentColor' : 'none'}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Background info */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-3">
+                  <div className="text-white text-sm font-medium">{background.name}</div>
+                  <div className="text-gray-200 text-xs">
+                    {background.tags.slice(0, 3).join(', ')}
+                  </div>
+                </div>
+
+                {/* Selected indicator */}
+                {selectedBackground === background.id && (
+                  <div className="absolute top-2 right-2 bg-blue-500 text-white rounded-full p-1">
+                    <Download size={12} />
+                  </div>
+                )}
+
+                {/* Preview indicator */}
+                {previewBackground === background.id && (
+                  <div className="absolute top-2 left-2 bg-yellow-500 text-white rounded-full p-1">
+                    <Eye size={12} />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Custom Background Upload */}
-      <div className="mt-6 pt-6 border-t border-gray-200">
-        <h3 className="font-semibold mb-3">Custom Background</h3>
-        <div className="space-y-3">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={e => {
-              const file = e.target.files?.[0]
-              if (file) {
-                const reader = new FileReader()
-                reader.onload = event => {
-                  const imageUrl = event.target?.result as string
-                  if (imageUrl) {
-                    document.body.style.backgroundImage = `url(${imageUrl})`
-                    document.body.style.backgroundSize = 'cover'
-                    document.body.style.backgroundPosition = 'center'
-                    document.body.style.backgroundRepeat = 'no-repeat'
-                    setSelectedBackground('custom')
-                  }
-                }
-                reader.readAsDataURL(file)
-              }
-            }}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100"
-          />
-          <p className="text-xs text-gray-500">
-            Upload your own image (JPG, PNG). Best resolution: 1920x1080
-          </p>
+      {/* Background Library Info */}
+      <div className="mt-6 p-3 bg-gray-50 rounded-lg text-sm text-gray-600">
+        <p className="font-medium mb-1">Enhanced Background Library</p>
+        <ul className="space-y-1 text-xs">
+          <li>• {BACKGROUND_LIBRARY.length} high-quality backgrounds</li>
+          <li>• Organized by categories and themes</li>
+          <li>• Search and favorite functionality</li>
+          <li>• Real-time preview system</li>
+          <li>• Credits to Unsplash photographers</li>
+        </ul>
+      </div>
+
+      {/* Preview Notice */}
+      {previewBackground && (
+        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="text-sm text-yellow-800">
+            <strong>Preview Mode:</strong> Click &quot;Apply Background&quot; to save this
+            selection, or select another image to change preview.
+          </div>
         </div>
-      </div>
-
-      {/* Reset Button */}
-      <div className="mt-4">
-        <button
-          onClick={() => {
-            document.body.style.backgroundImage = 'none'
-            document.body.style.backgroundColor = '#f9fafb'
-            setSelectedBackground('minimal1')
-          }}
-          className="w-full btn-secondary"
-        >
-          Reset to Default
-        </button>
-      </div>
+      )}
     </div>
   )
 }

@@ -90,7 +90,16 @@ export interface ProgressData {
   streak: number
 }
 
-export type PopupType = 'timer' | 'tasks' | 'notes' | 'background' | 'audio' | null
+export type PopupType =
+  | 'timer'
+  | 'tasks'
+  | 'notes'
+  | 'background'
+  | 'audio'
+  | 'theme'
+  | 'mixer'
+  | 'visual'
+  | null
 
 // Multi-popup interface types
 export interface PopupInstance {

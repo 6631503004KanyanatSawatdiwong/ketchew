@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { PrecisionTimer } from '../utils/PrecisionTimer'
+import { useAudioStore } from './audioStore'
 
 export type TimerPhase = 'study' | 'shortBreak' | 'longBreak'
 export type TimerStatus = 'idle' | 'running' | 'paused' | 'completed'
@@ -81,23 +82,55 @@ export const useTimerStore = create<PomodoroState>()(
         }
         state.precisionTimer?.start()
         set({ status: 'running' })
+
+        // Start background sound if it's a study phase and background sounds are enabled
+        const audioStore = useAudioStore.getState()
+        if (
+          state.currentPhase === 'study' &&
+          audioStore.enableBackgroundSounds &&
+          audioStore.selectedBackgroundSound
+        ) {
+          audioStore.playBackgroundSound(audioStore.selectedBackgroundSound)
+        }
       },
 
       pauseTimer: () => {
         const state = get()
         state.precisionTimer?.pause()
         set({ status: 'paused' })
+
+        // Stop background sound when pausing during study
+        const audioStore = useAudioStore.getState()
+        if (state.currentPhase === 'study' && audioStore.isBackgroundPlaying) {
+          audioStore.stopBackgroundSound()
+        }
       },
 
       resumeTimer: () => {
         const state = get()
         state.precisionTimer?.start()
         set({ status: 'running' })
+
+        // Resume background sound if it's a study phase and background sounds are enabled
+        const audioStore = useAudioStore.getState()
+        if (
+          state.currentPhase === 'study' &&
+          audioStore.enableBackgroundSounds &&
+          audioStore.selectedBackgroundSound
+        ) {
+          audioStore.playBackgroundSound(audioStore.selectedBackgroundSound)
+        }
       },
 
       stopTimer: () => {
         const state = get()
         state.precisionTimer?.stop()
+
+        // Stop background sound when stopping timer
+        const audioStore = useAudioStore.getState()
+        if (audioStore.isBackgroundPlaying) {
+          audioStore.stopBackgroundSound()
+        }
 
         // Reset time to current phase duration
         const phaseDuration =
@@ -172,6 +205,14 @@ export const useTimerStore = create<PomodoroState>()(
         // Store the completed phase for notification
         const completedPhase = { phase: state.currentPhase, round: state.currentRound }
 
+        // Play completion notification sound
+        const audioStore = useAudioStore.getState()
+        if (state.currentPhase === 'study') {
+          audioStore.playNotificationSound('studyEnd')
+        } else {
+          audioStore.playNotificationSound('breakEnd')
+        }
+
         if (state.currentPhase === 'study') {
           // Study phase completed - mark round as done
           const newCompletedRounds = [...state.completedRounds]
@@ -202,6 +243,10 @@ export const useTimerStore = create<PomodoroState>()(
         } else {
           // Break completed
           if (state.currentRound === 4) {
+            // All rounds completed - play completion sound
+            const audioStore = useAudioStore.getState()
+            audioStore.playNotificationSound('roundComplete')
+
             // All rounds completed - reset session
             set({
               currentRound: 1,

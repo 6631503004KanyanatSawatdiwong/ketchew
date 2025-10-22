@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { Timer, CheckSquare, FileText, Image, Volume2 } from 'lucide-react'
+import {
+  Timer,
+  CheckSquare,
+  FileText,
+  Image,
+  Volume2,
+  Palette,
+  Layers,
+  Settings,
+} from 'lucide-react'
 import { PopupType } from '../types'
 
 interface SidebarProps {
@@ -17,6 +26,9 @@ const Sidebar: React.FC<SidebarProps> = () => {
       { id: 'notes' as const, icon: FileText, label: 'Notes' },
       { id: 'background' as const, icon: Image, label: 'Background' },
       { id: 'audio' as const, icon: Volume2, label: 'Audio' },
+      { id: 'mixer' as const, icon: Layers, label: 'Audio Mixer' },
+      { id: 'theme' as const, icon: Palette, label: 'Theme' },
+      { id: 'visual' as const, icon: Settings, label: 'Visual' },
     ],
     []
   )
