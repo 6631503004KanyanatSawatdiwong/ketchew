@@ -9,6 +9,7 @@ import SoundSelector from './SoundSelector'
 import ThemeSelector from './ThemeSelector'
 import AudioMixer from './AudioMixer'
 import VisualCustomization from './VisualCustomization'
+import { AnalyticsDashboard } from './AnalyticsDashboard'
 
 interface PopupManagerProps {
   onPopupStateChange?: (popups: PopupInstance[]) => void
@@ -187,6 +188,8 @@ const PopupManager: React.FC<PopupManagerProps> = ({ onPopupStateChange }) => {
         return <AudioMixer />
       case 'visual':
         return <VisualCustomization />
+      case 'analytics':
+        return <AnalyticsDashboard />
       default:
         return <div>Unknown popup type</div>
     }

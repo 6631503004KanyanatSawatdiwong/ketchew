@@ -8,8 +8,12 @@ import {
   Palette,
   Layers,
   Settings,
+  Video,
+  Users,
+  TrendingUp,
 } from 'lucide-react'
 import { PopupType } from '../types'
+import { useCollaborationStore } from '../stores/collaborationStore'
 
 interface SidebarProps {
   // Props can be added here in the future if needed
@@ -18,6 +22,15 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = () => {
   const [openPopups, setOpenPopups] = useState<string[]>([])
+  
+  // Collaboration store
+  const { 
+    isInSession, 
+    isConnected, 
+    currentSession, 
+    setInviteModalOpen, 
+    setJoinModalOpen 
+  } = useCollaborationStore()
 
   const tabs = useMemo(
     () => [
@@ -29,6 +42,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
       { id: 'mixer' as const, icon: Layers, label: 'Audio Mixer' },
       { id: 'theme' as const, icon: Palette, label: 'Theme' },
       { id: 'visual' as const, icon: Settings, label: 'Visual' },
+      { id: 'analytics' as const, icon: TrendingUp, label: 'Analytics' },
     ],
     []
   )
@@ -98,6 +112,54 @@ const Sidebar: React.FC<SidebarProps> = () => {
   return (
     <div className="fixed left-4 top-1/2 transform -translate-y-1/2 z-40">
       <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-2">
+        {/* Collaboration Controls */}
+        <div className="flex flex-col gap-1 mb-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+          <button
+            onClick={() => setInviteModalOpen(true)}
+            disabled={!isConnected}
+            className={`p-3 rounded-lg transition-all duration-200 group relative ${
+              isInSession
+                ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
+                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed'
+            }`}
+            title={isInSession ? 'In Session' : 'Start Session'}
+          >
+            <Video size={20} />
+            
+            {/* Session indicator */}
+            {isInSession && (
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
+            )}
+            
+            {/* Participant count */}
+            {isInSession && currentSession && (
+              <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                {currentSession.participants.length}
+              </div>
+            )}
+
+            {/* Tooltip */}
+            <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              {isInSession ? 'Session Active' : 'Start Session'}
+            </div>
+          </button>
+
+          <button
+            onClick={() => setJoinModalOpen(true)}
+            disabled={!isConnected || isInSession}
+            className="p-3 rounded-lg transition-all duration-200 group relative text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Join Session"
+          >
+            <Users size={20} />
+
+            {/* Tooltip */}
+            <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              Join Session
+            </div>
+          </button>
+        </div>
+
+        {/* Main App Controls */}
         <div className="flex flex-col gap-1">
           {tabs.map(({ id, icon: Icon, label }) => (
             <button

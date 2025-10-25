@@ -99,6 +99,8 @@ export type PopupType =
   | 'theme'
   | 'mixer'
   | 'visual'
+  | 'collaboration'
+  | 'analytics'
   | null
 
 // Multi-popup interface types

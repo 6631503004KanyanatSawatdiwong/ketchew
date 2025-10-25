@@ -3,9 +3,13 @@ import DesktopInterface from './components/DesktopInterface'
 import Sidebar from './components/Sidebar'
 import PopupManager from './components/PopupManager'
 import KeyboardShortcutsHelp from './components/KeyboardShortcutsHelp'
+import { CollaborationChat } from './components/CollaborationChat'
+import { CreateSessionModal } from './components/CreateSessionModal'
+import { JoinSessionModal } from './components/JoinSessionModal'
 import useKeyboardShortcuts from './hooks/useKeyboardShortcuts'
 import { migrateTodoData, isMigrationNeeded } from './utils/migration'
 import { useThemeStore } from './stores/themeStore'
+import { useCollaborationStore, initializeCollaboration } from './stores/collaborationStore'
 
 function App() {
   // Enable keyboard shortcuts for multi-popup system
@@ -13,6 +17,23 @@ function App() {
 
   // Initialize theme system
   const { currentTheme } = useThemeStore()
+
+  // Initialize collaboration system
+  const { inviteModalOpen, joinModalOpen, setInviteModalOpen, setJoinModalOpen } = useCollaborationStore()
+
+  // Initialize collaboration connection
+  useEffect(() => {
+    initializeCollaboration()
+
+    // Check for join session in URL
+    const urlParams = new URLSearchParams(window.location.search)
+    const joinSessionId = urlParams.get('join')
+    if (joinSessionId) {
+      setJoinModalOpen(true)
+      // Clear URL parameter
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+  }, [setJoinModalOpen])
 
   // Run data migrations on app startup
   useEffect(() => {
@@ -65,6 +86,19 @@ function App() {
 
       {/* Multi-popup manager system */}
       <PopupManager />
+
+      {/* Collaboration chat system */}
+      <CollaborationChat />
+
+      {/* Collaboration modals */}
+      <CreateSessionModal 
+        isOpen={inviteModalOpen} 
+        onClose={() => setInviteModalOpen(false)} 
+      />
+      <JoinSessionModal 
+        isOpen={joinModalOpen} 
+        onClose={() => setJoinModalOpen(false)} 
+      />
 
       {/* Keyboard shortcuts help */}
       <KeyboardShortcutsHelp />

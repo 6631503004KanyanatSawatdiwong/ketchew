@@ -15,6 +15,7 @@ import { useLocalStorage } from '../hooks/useLocalStorage'
 import { usePomodoroTaskIntegration } from '../hooks/usePomodoroTaskIntegration'
 import { useTaskStore } from '../stores/taskStore'
 import { calculateTaskAnalytics } from '../utils/taskAnalytics'
+import { useAnalyticsStore } from '../stores/analyticsStore'
 import { TodoItem } from '../types'
 
 type FilterType =
@@ -43,6 +44,9 @@ const TodoList: React.FC = () => {
   // Pomodoro integration
   const { activeTaskId, setActiveTask, isStudyPhase, isTimerActive } = usePomodoroTaskIntegration()
   const { getTaskAnalytics, taskSessions } = useTaskStore()
+  
+  // Analytics integration
+  const { recordTaskCompletion } = useAnalyticsStore()
 
   // Validation constants
   const MAX_TODO_LENGTH = 500
@@ -247,6 +251,11 @@ const TodoList: React.FC = () => {
         if (todo.id === id) {
           const isNowCompleted = !todo.completed
           const analytics = getTaskAnalytics(id)
+
+          // Record task completion in analytics if completing task
+          if (isNowCompleted) {
+            recordTaskCompletion(new Date().toISOString().split('T')[0])
+          }
 
           return {
             ...todo,
