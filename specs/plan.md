@@ -241,7 +241,7 @@
 #### Week 10: Server Setup ✅ COMPLETED
 
 - [x] Initialize Node.js + Express server
-- [x] Configure Socket.io with room management
+- [x] Configure SComplete Phase 5 & 6ocket.io with room management
 - [x] Implement in-memory session storage
 - [x] Add rate limiting and error handling
 - [x] Set up development and production configurations
