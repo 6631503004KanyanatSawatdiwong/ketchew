@@ -300,9 +300,7 @@
 
 #### Week 15: Analytics UI (FR05.3-FR05.6)
 
-- [ ] Create streak calculation logic
 - [ ] Build analytics dashboard with charts
-- [ ] Implement data export functionality (CSV/JSON)
 - [ ] Add social sharing capabilities
 - [ ] Create productivity insights
 
