@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { X, Settings, Bell, Volume2, Monitor, Keyboard, Download, Upload, Trash2, RotateCcw } from 'lucide-react'
+import { X, Settings, Bell, Monitor, Download, Upload, Trash2, RotateCcw } from 'lucide-react'
 import { useTimerStore } from '../stores/timerStore'
 import { useTaskStore } from '../stores/taskStore'
 import { useNotesStore } from '../stores/notesStore'
@@ -24,9 +24,7 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
   const tabs = [
     { id: 'timer', label: 'Timer', icon: Settings },
     { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'audio', label: 'Audio', icon: Volume2 },
     { id: 'display', label: 'Display', icon: Monitor },
-    { id: 'keyboard', label: 'Keyboard', icon: Keyboard },
     { id: 'data', label: 'Data', icon: Download },
   ]
 
@@ -41,7 +39,7 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
       analytics: sessions,
       taskSessions,
       settings,
-      exportDate: new Date().toISOString()
+      exportDate: new Date().toISOString(),
     }
 
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
@@ -60,10 +58,10 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
     if (!file) return
 
     const reader = new FileReader()
-    reader.onload = (e) => {
+    reader.onload = e => {
       try {
         const data = JSON.parse(e.target?.result as string)
-        
+
         // Import settings
         if (data.settings) {
           updateSettings(data.settings)
@@ -75,7 +73,9 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
         }
 
         // Note: Notes and analytics would need import methods in their stores
-        alert('Settings and todos imported successfully! Please refresh the page to see all changes.')
+        alert(
+          'Settings and todos imported successfully! Please refresh the page to see all changes.'
+        )
       } catch (err) {
         console.error('Import error:', err)
         alert('Error importing data. Please check the file format.')
@@ -120,7 +120,7 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
                 min="1"
                 max="60"
                 value={settings.studyDuration}
-                onChange={(e) => updateSettings({ studyDuration: Number(e.target.value) })}
+                onChange={e => updateSettings({ studyDuration: Number(e.target.value) })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -134,7 +134,7 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
                 min="1"
                 max="30"
                 value={settings.shortBreakDuration}
-                onChange={(e) => updateSettings({ shortBreakDuration: Number(e.target.value) })}
+                onChange={e => updateSettings({ shortBreakDuration: Number(e.target.value) })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -148,7 +148,7 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
                 min="1"
                 max="60"
                 value={settings.longBreakDuration}
-                onChange={(e) => updateSettings({ longBreakDuration: Number(e.target.value) })}
+                onChange={e => updateSettings({ longBreakDuration: Number(e.target.value) })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -158,7 +158,7 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
                 type="checkbox"
                 id="autoStartBreaks"
                 checked={settings.autoStartBreaks}
-                onChange={(e) => updateSettings({ autoStartBreaks: e.target.checked })}
+                onChange={e => updateSettings({ autoStartBreaks: e.target.checked })}
                 className="mr-2"
               />
               <label htmlFor="autoStartBreaks" className="text-sm text-gray-700">
@@ -171,22 +171,12 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
                 type="checkbox"
                 id="autoStartStudy"
                 checked={settings.autoStartStudy}
-                onChange={(e) => updateSettings({ autoStartStudy: e.target.checked })}
+                onChange={e => updateSettings({ autoStartStudy: e.target.checked })}
                 className="mr-2"
               />
               <label htmlFor="autoStartStudy" className="text-sm text-gray-700">
                 Auto-start study sessions
               </label>
-            </div>
-          </div>
-        )
-
-      case 'audio':
-        return (
-          <div className="space-y-6">
-            <div className="text-center py-8">
-              <p className="text-gray-500">Audio settings are managed globally in the Audio popup.</p>
-              <p className="text-sm text-gray-400 mt-2">Use Ctrl/⌘ + 5 to open audio settings.</p>
             </div>
           </div>
         )
@@ -199,7 +189,7 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
               <p className="text-sm text-gray-600 mb-4">
                 Export your data to backup or import from a previous backup.
               </p>
-              
+
               <div className="flex space-x-3">
                 <button
                   onClick={exportData}
@@ -208,16 +198,11 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
                   <Download className="w-4 h-4 mr-2" />
                   Export Data
                 </button>
-                
+
                 <label className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors cursor-pointer">
                   <Upload className="w-4 h-4 mr-2" />
                   Import Data
-                  <input
-                    type="file"
-                    accept=".json"
-                    onChange={importData}
-                    className="hidden"
-                  />
+                  <input type="file" accept=".json" onChange={importData} className="hidden" />
                 </label>
               </div>
             </div>
@@ -227,7 +212,7 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
               <p className="text-sm text-gray-600 mb-4">
                 Clear specific data types. Use with caution - this cannot be undone.
               </p>
-              
+
               <div className="space-y-3">
                 <button
                   onClick={() => confirmAction('clear all tasks', clearAllTasks)}
@@ -237,7 +222,7 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
                   <Trash2 className="w-4 h-4 mr-2" />
                   Clear All Tasks
                 </button>
-                
+
                 <button
                   onClick={() => confirmAction('clear all notes', clearAllNotes)}
                   className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
@@ -246,7 +231,7 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
                   <Trash2 className="w-4 h-4 mr-2" />
                   Clear All Notes
                 </button>
-                
+
                 <button
                   onClick={() => confirmAction('clear analytics data', clearAllAnalytics)}
                   className="flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
@@ -263,17 +248,19 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
               <p className="text-sm text-gray-600 mb-4">
                 Reset all settings to their default values.
               </p>
-              
+
               <button
-                onClick={() => confirmAction('reset all settings', () => {
-                  updateSettings({
-                    studyDuration: 25,
-                    shortBreakDuration: 5,
-                    longBreakDuration: 15,
-                    autoStartBreaks: false,
-                    autoStartStudy: false
+                onClick={() =>
+                  confirmAction('reset all settings', () => {
+                    updateSettings({
+                      studyDuration: 25,
+                      shortBreakDuration: 5,
+                      longBreakDuration: 15,
+                      autoStartBreaks: false,
+                      autoStartStudy: false,
+                    })
                   })
-                })}
+                }
                 className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
                 disabled={showConfirmation === 'reset all settings'}
               >
@@ -302,10 +289,7 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
             <Settings className="w-6 h-6 text-blue-600" />
             <h2 className="text-xl font-semibold text-gray-900">Settings</h2>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
@@ -314,7 +298,7 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
           {/* Sidebar */}
           <div className="w-64 bg-gray-50 border-r border-gray-200">
             <nav className="p-4 space-y-2">
-              {tabs.map((tab) => {
+              {tabs.map(tab => {
                 const Icon = tab.icon
                 return (
                   <button
@@ -335,9 +319,7 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
           </div>
 
           {/* Content */}
-          <div className="flex-1 p-6 overflow-y-auto max-h-[60vh]">
-            {renderTabContent()}
-          </div>
+          <div className="flex-1 p-6 overflow-y-auto max-h-[60vh]">{renderTabContent()}</div>
         </div>
       </div>
     </div>

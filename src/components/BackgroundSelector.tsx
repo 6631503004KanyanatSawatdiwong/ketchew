@@ -227,7 +227,10 @@ const BackgroundSelector: React.FC = () => {
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="flex gap-2">
                       <button
-                        onClick={() => handlePreview(background.id)}
+                        onClick={e => {
+                          e.stopPropagation()
+                          handlePreview(background.id)
+                        }}
                         className={`p-2 rounded-full backdrop-blur-sm transition-colors ${
                           previewBackground === background.id
                             ? 'bg-yellow-500 text-white'
@@ -238,14 +241,20 @@ const BackgroundSelector: React.FC = () => {
                         <Eye size={16} />
                       </button>
                       <button
-                        onClick={() => handleBackgroundSelect(background.id)}
+                        onClick={e => {
+                          e.stopPropagation()
+                          handleBackgroundSelect(background.id)
+                        }}
                         className="p-2 bg-blue-500 text-white rounded-full backdrop-blur-sm hover:bg-blue-600 transition-colors"
                         title="Apply Background"
                       >
                         <Download size={16} />
                       </button>
                       <button
-                        onClick={() => toggleFavorite(background.id)}
+                        onClick={e => {
+                          e.stopPropagation()
+                          toggleFavorite(background.id)
+                        }}
                         className={`p-2 rounded-full backdrop-blur-sm transition-colors ${
                           favorites.includes(background.id)
                             ? 'bg-red-500 text-white'
@@ -262,8 +271,14 @@ const BackgroundSelector: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Click to select background directly */}
+                <div
+                  className="absolute inset-0 cursor-pointer"
+                  onClick={() => handleBackgroundSelect(background.id)}
+                />
+
                 {/* Background info */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-3">
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-3 pointer-events-none">
                   <div className="text-white text-sm font-medium">{background.name}</div>
                   <div className="text-gray-200 text-xs">
                     {background.tags.slice(0, 3).join(', ')}

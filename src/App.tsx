@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import DesktopInterface from './components/DesktopInterface'
 import Sidebar from './components/Sidebar'
 import PopupManager from './components/PopupManager'
-import KeyboardShortcutsHelp from './components/KeyboardShortcutsHelp'
 import { CollaborationChat } from './components/CollaborationChat'
 import { CreateSessionModal } from './components/CreateSessionModal'
 import { JoinSessionModal } from './components/JoinSessionModal'
@@ -10,17 +9,13 @@ import EnhancedSettings from './components/EnhancedSettings'
 import AccessibilityPanel from './components/AccessibilityPanel'
 import PerformanceMonitor from './components/PerformanceMonitor'
 import Phase8Completion from './components/Phase8Completion'
-import useKeyboardShortcuts from './hooks/useKeyboardShortcuts'
-import { useGlobalKeyboardShortcuts } from './hooks/useGlobalKeyboardShortcuts'
+
 import { migrateTodoData, isMigrationNeeded } from './utils/migration'
 import { useThemeStore } from './stores/themeStore'
 import { useCollaborationStore, initializeCollaboration } from './stores/collaborationStore'
+import { BACKGROUND_LIBRARY } from './data/backgroundLibrary'
 
 function App() {
-  // Enable keyboard shortcuts for multi-popup system
-  useKeyboardShortcuts()
-  useGlobalKeyboardShortcuts()
-
   // Phase 8 modal states
   const [showEnhancedSettings, setShowEnhancedSettings] = useState(false)
   const [showAccessibilityPanel, setShowAccessibilityPanel] = useState(false)
@@ -30,7 +25,8 @@ function App() {
   const { currentTheme } = useThemeStore()
 
   // Initialize collaboration system
-  const { inviteModalOpen, joinModalOpen, setInviteModalOpen, setJoinModalOpen } = useCollaborationStore()
+  const { inviteModalOpen, joinModalOpen, setInviteModalOpen, setJoinModalOpen } =
+    useCollaborationStore()
 
   // Show Phase 8 completion on first load
   useEffect(() => {
@@ -96,6 +92,24 @@ function App() {
     document.body.classList.add(`theme-${currentTheme.id}`)
   }, [currentTheme])
 
+  // Initialize default background
+  useEffect(() => {
+    const savedBackground = localStorage.getItem('selectedBackground')
+    if (!savedBackground) {
+      // Set a default background - use the first minimalist background
+      const defaultBg =
+        BACKGROUND_LIBRARY.find(bg => bg.category === 'minimalist') || BACKGROUND_LIBRARY[0]
+      if (defaultBg) {
+        localStorage.setItem('selectedBackground', JSON.stringify(defaultBg.id))
+        document.body.style.backgroundImage = `url(${defaultBg.imageUrl})`
+        document.body.style.backgroundSize = 'cover'
+        document.body.style.backgroundPosition = 'center'
+        document.body.style.backgroundRepeat = 'no-repeat'
+        document.body.style.backgroundAttachment = 'fixed'
+      }
+    }
+  }, [])
+
   return (
     <div className="h-screen w-full overflow-hidden">
       {/* Desktop background interface */}
@@ -111,21 +125,15 @@ function App() {
       <CollaborationChat />
 
       {/* Collaboration modals */}
-      <CreateSessionModal 
-        isOpen={inviteModalOpen} 
-        onClose={() => setInviteModalOpen(false)} 
-      />
-      <JoinSessionModal 
-        isOpen={joinModalOpen} 
-        onClose={() => setJoinModalOpen(false)} 
-      />
+      <CreateSessionModal isOpen={inviteModalOpen} onClose={() => setInviteModalOpen(false)} />
+      <JoinSessionModal isOpen={joinModalOpen} onClose={() => setJoinModalOpen(false)} />
 
       {/* Phase 8 Components */}
       <EnhancedSettings
         isOpen={showEnhancedSettings}
         onClose={() => setShowEnhancedSettings(false)}
       />
-      
+
       <AccessibilityPanel
         isOpen={showAccessibilityPanel}
         onClose={() => setShowAccessibilityPanel(false)}
@@ -138,9 +146,6 @@ function App() {
 
       {/* Performance Monitor */}
       <PerformanceMonitor />
-
-      {/* Keyboard shortcuts help */}
-      <KeyboardShortcutsHelp />
     </div>
   )
 }

@@ -40,16 +40,17 @@ const TodoList: React.FC = () => {
   const [showTaskForm, setShowTaskForm] = useState(false)
   const [newTaskPriority, setNewTaskPriority] = useState<PriorityType>('medium')
   const [newTaskCategory, setNewTaskCategory] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Pomodoro integration
   const { activeTaskId, setActiveTask, isStudyPhase, isTimerActive } = usePomodoroTaskIntegration()
   const { getTaskAnalytics, taskSessions } = useTaskStore()
-  
+
   // Analytics integration
   const { recordTaskCompletion } = useAnalyticsStore()
 
   // Validation constants
-  const MAX_TODO_LENGTH = 500
+  const MAX_TODO_LENGTH = 50
   const MIN_TODO_LENGTH = 1
 
   const validateTodoText = (text: string): string | null => {
@@ -79,30 +80,42 @@ const TodoList: React.FC = () => {
   const getFilteredTodos = () => {
     let filtered = todos
 
+    // Apply text search filter first
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(
+        todo =>
+          todo.text.toLowerCase().includes(query) ||
+          (todo.category && todo.category.toLowerCase().includes(query))
+      )
+    }
+
+    // Apply status/priority filters
     switch (filter) {
       case 'active':
-        filtered = todos.filter(todo => !todo.completed)
+        filtered = filtered.filter(todo => !todo.completed)
         break
       case 'completed':
-        filtered = todos.filter(todo => todo.completed)
+        filtered = filtered.filter(todo => todo.completed)
         break
       case 'with-pomodoros':
-        filtered = todos.filter(todo => {
+        filtered = filtered.filter(todo => {
           const analytics = getTaskAnalytics(todo.id)
           return analytics.totalSessions > 0
         })
         break
       case 'high-priority':
-        filtered = todos.filter(todo => todo.priority === 'high')
+        filtered = filtered.filter(todo => todo.priority === 'high')
         break
       case 'medium-priority':
-        filtered = todos.filter(todo => todo.priority === 'medium')
+        filtered = filtered.filter(todo => todo.priority === 'medium')
         break
       case 'low-priority':
-        filtered = todos.filter(todo => todo.priority === 'low')
+        filtered = filtered.filter(todo => todo.priority === 'low')
         break
       default:
-        filtered = todos
+        // No additional filtering needed
+        break
     }
 
     return filtered.sort((a, b) => {
@@ -214,6 +227,10 @@ const TodoList: React.FC = () => {
       setTodos(todos.filter(todo => !selectedTasks.has(todo.id)))
       setSelectedTasks(new Set())
     }
+  }
+
+  const clearSearch = () => {
+    setSearchQuery('')
   }
 
   const addTodo = () => {
@@ -405,8 +422,28 @@ const TodoList: React.FC = () => {
         )}
       </div>
 
-      {/* Filter and Bulk Operations */}
+      {/* Filter and Search */}
       <div className="mb-4 space-y-3">
+        {/* Search Input */}
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search tasks..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full pl-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+          {searchQuery && (
+            <button
+              onClick={clearSearch}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              title="Clear search"
+            >
+              ×
+            </button>
+          )}
+        </div>
+
         {/* Filter */}
         <div className="flex items-center gap-2">
           <Filter size={16} className="text-gray-500" />

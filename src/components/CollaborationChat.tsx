@@ -1,52 +1,51 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Send, MessageCircle, Users, LogOut, Crown } from 'lucide-react';
-import { useCollaborationStore } from '../stores/collaborationStore';
+import React, { useState, useRef, useEffect } from 'react'
+import { Send, MessageCircle, Users, LogOut, Crown } from 'lucide-react'
+import { useCollaborationStore } from '../stores/collaborationStore'
 
 export const CollaborationChat: React.FC = () => {
-  const [message, setMessage] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  
+  const [message, setMessage] = useState('')
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
   const {
     currentSession,
     isInSession,
-    isHost,
     userNickname,
     chatOpen,
     participantsOpen,
     setChatOpen,
     setParticipantsOpen,
     sendMessage,
-    leaveSession
-  } = useCollaborationStore();
+    leaveSession,
+  } = useCollaborationStore()
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
 
   useEffect(() => {
-    scrollToBottom();
-  }, [currentSession?.chat]);
+    scrollToBottom()
+  }, [currentSession?.chat])
 
   const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (message.trim()) {
-      sendMessage(message.trim());
-      setMessage('');
+      sendMessage(message.trim())
+      setMessage('')
     }
-  };
+  }
 
   const formatTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
+    return new Date(timestamp).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
 
-  if (!isInSession || !currentSession) return null;
+  if (!isInSession || !currentSession) return null
 
-  const participants = currentSession.participants || [];
-  const messages = currentSession.chat || [];
-  const hostParticipant = participants.find(p => p.isHost);
+  const participants = currentSession.participants || []
+  const messages = currentSession.chat || []
+  const hostParticipant = participants.find(p => p.isHost)
 
   return (
     <div className="fixed bottom-4 right-4 flex flex-col items-end gap-2 z-40">
@@ -67,7 +66,7 @@ export const CollaborationChat: React.FC = () => {
             </div>
           </div>
           <div className="p-2 max-h-48 overflow-y-auto">
-            {participants.map((participant) => (
+            {participants.map(participant => (
               <div
                 key={participant.id}
                 className="flex items-center gap-2 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -103,9 +102,7 @@ export const CollaborationChat: React.FC = () => {
           {/* Chat Header */}
           <div className="p-3 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
-              <h3 className="font-medium text-gray-900 dark:text-white">
-                Session Chat
-              </h3>
+              <h3 className="font-medium text-gray-900 dark:text-white">Session Chat</h3>
               <button
                 onClick={() => setChatOpen(false)}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
@@ -128,7 +125,7 @@ export const CollaborationChat: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-2">
-                {messages.map((msg) => (
+                {messages.map(msg => (
                   <div
                     key={msg.id}
                     className={`p-2 rounded-lg max-w-[90%] ${
@@ -157,7 +154,7 @@ export const CollaborationChat: React.FC = () => {
               <input
                 type="text"
                 value={message}
-                onChange={(e) => setMessage(e.target.value.substring(0, 200))}
+                onChange={e => setMessage(e.target.value.substring(0, 200))}
                 placeholder="Type a message..."
                 className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                 maxLength={200}
@@ -212,5 +209,5 @@ export const CollaborationChat: React.FC = () => {
         </button>
       </div>
     </div>
-  );
-};
+  )
+}

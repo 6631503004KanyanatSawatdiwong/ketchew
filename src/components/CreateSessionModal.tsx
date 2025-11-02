@@ -1,88 +1,102 @@
-import React, { useState } from 'react';
-import { X, Users, Video, Share2, Copy, Check } from 'lucide-react';
-import { useCollaborationStore } from '../stores/collaborationStore';
+import React, { useState } from 'react'
+import { X, Users, Video, Share2, Copy, Check } from 'lucide-react'
+import { useCollaborationStore } from '../stores/collaborationStore'
 
 interface CreateSessionModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen: boolean
+  onClose: () => void
 }
 
 export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({ isOpen, onClose }) => {
-  const [nickname, setNickname] = useState('');
-  const [selectedAvatar, setSelectedAvatar] = useState('🐱');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [sessionId, setSessionId] = useState('');
-  const [copied, setCopied] = useState(false);
+  const [nickname, setNickname] = useState('')
+  const [selectedAvatar, setSelectedAvatar] = useState('🐱')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [sessionId, setSessionId] = useState('')
+  const [copied, setCopied] = useState(false)
 
-  const { createSession, isConnected } = useCollaborationStore();
+  const { createSession, isConnected } = useCollaborationStore()
 
   const avatars = [
-    '🐱', '🐶', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼',
-    '🐨', '🐯', '🦁', '🐸', '🐵', '🐧', '🐦', '🦉'
-  ];
+    '🐱',
+    '🐶',
+    '🐭',
+    '🐹',
+    '🐰',
+    '🦊',
+    '🐻',
+    '🐼',
+    '🐨',
+    '🐯',
+    '🦁',
+    '🐸',
+    '🐵',
+    '🐧',
+    '🐦',
+    '🦉',
+  ]
 
   const handleCreateSession = async () => {
     if (!nickname.trim()) {
-      setError('Please enter a nickname');
-      return;
+      setError('Please enter a nickname')
+      return
     }
 
     if (!isConnected) {
-      setError('Not connected to collaboration server');
-      return;
+      setError('Not connected to collaboration server')
+      return
     }
 
-    setIsLoading(true);
-    setError('');
+    setIsLoading(true)
+    setError('')
 
     try {
-      const result = await createSession(nickname.trim(), selectedAvatar);
+      const result = await createSession(nickname.trim(), selectedAvatar)
       if (result.success && result.sessionId) {
-        setSessionId(result.sessionId);
+        setSessionId(result.sessionId)
       } else {
-        setError(result.error || 'Failed to create session');
+        setError(result.error || 'Failed to create session')
       }
-    } catch (err) {
-      setError('Failed to create session');
+    } catch {
+      setError('Failed to create session')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const copyInviteLink = async () => {
-    const inviteLink = `${window.location.origin}?join=${sessionId}`;
+    const inviteLink = `${window.location.origin}?join=${sessionId}`
     try {
-      await navigator.clipboard.writeText(inviteLink);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
+      await navigator.clipboard.writeText(inviteLink)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
       // Fallback for older browsers
-      const textArea = document.createElement('textarea');
-      textArea.value = inviteLink;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      const textArea = document.createElement('textarea')
+      textArea.value = inviteLink
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
     }
-  };
+  }
 
   const resetModal = () => {
-    setNickname('');
-    setError('');
-    setSessionId('');
-    setCopied(false);
-    setIsLoading(false);
-  };
+    setNickname('')
+    setError('')
+    setSessionId('')
+    setCopied(false)
+    setIsLoading(false)
+  }
 
   const handleClose = () => {
-    resetModal();
-    onClose();
-  };
+    resetModal()
+    onClose()
+  }
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -108,7 +122,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({ isOpen, 
               <input
                 type="text"
                 value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
+                onChange={e => setNickname(e.target.value)}
                 placeholder="Enter your nickname"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                 maxLength={20}
@@ -121,7 +135,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({ isOpen, 
                 Choose Avatar
               </label>
               <div className="grid grid-cols-8 gap-2">
-                {avatars.map((avatar) => (
+                {avatars.map(avatar => (
                   <button
                     key={avatar}
                     onClick={() => setSelectedAvatar(avatar)}
@@ -228,5 +242,5 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({ isOpen, 
         )}
       </div>
     </div>
-  );
-};
+  )
+}

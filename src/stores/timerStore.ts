@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { PrecisionTimer } from '../utils/PrecisionTimer'
-import { useAudioStore } from './audioStore'
 import { useCollaborationStore } from './collaborationStore'
 import { useAnalyticsStore } from './analyticsStore'
 
@@ -35,7 +34,7 @@ export interface PomodoroState {
 
   // Internal timer reference
   precisionTimer: PrecisionTimer | null
-  
+
   // Session tracking
   currentSessionStart: string | null
 
@@ -55,7 +54,7 @@ export interface PomodoroState {
   handleTick: (remainingMs: number) => void
   handlePhaseComplete: () => void
   createTimer: () => void
-  
+
   // Collaboration actions
   syncToCollaboration: () => void
   updateFromCollaboration: (timerState: Partial<PomodoroState>) => void
@@ -87,100 +86,70 @@ export const useTimerStore = create<PomodoroState>()(
       // Timer controls
       startTimer: () => {
         const state = get()
-        
+
         // Check if we can control the timer (not in collaboration or we're the host)
         const collaborationStore = useCollaborationStore.getState()
         if (collaborationStore.isInSession && !collaborationStore.isHost) {
           return // Only host can control timer in collaboration
         }
-        
-        if (!state.precisionTimer) {
-          state.createTimer()
+
+        // Always create a new timer when starting
+        state.createTimer()
+        const timer = state.precisionTimer
+        if (timer) {
+          timer.start()
         }
-        state.precisionTimer?.start()
-        
+
         // Record session start
         const sessionStart = new Date().toISOString()
         set({ status: 'running', currentSessionStart: sessionStart })
 
         // Sync to collaboration if in session
         setTimeout(() => get().syncToCollaboration(), 100)
-
-        // Start background sound if it's a study phase and background sounds are enabled
-        const audioStore = useAudioStore.getState()
-        if (
-          state.currentPhase === 'study' &&
-          audioStore.enableBackgroundSounds &&
-          audioStore.selectedBackgroundSound
-        ) {
-          audioStore.playBackgroundSound(audioStore.selectedBackgroundSound)
-        }
       },
 
       pauseTimer: () => {
         const state = get()
-        
+
         // Check if we can control the timer (not in collaboration or we're the host)
         const collaborationStore = useCollaborationStore.getState()
         if (collaborationStore.isInSession && !collaborationStore.isHost) {
           return // Only host can control timer in collaboration
         }
-        
+
         state.precisionTimer?.pause()
         set({ status: 'paused' })
 
         // Sync to collaboration if in session
         setTimeout(() => get().syncToCollaboration(), 100)
-
-        // Stop background sound when pausing during study
-        const audioStore = useAudioStore.getState()
-        if (state.currentPhase === 'study' && audioStore.isBackgroundPlaying) {
-          audioStore.stopBackgroundSound()
-        }
       },
 
       resumeTimer: () => {
         const state = get()
-        
+
         // Check if we can control the timer (not in collaboration or we're the host)
         const collaborationStore = useCollaborationStore.getState()
         if (collaborationStore.isInSession && !collaborationStore.isHost) {
           return // Only host can control timer in collaboration
         }
-        
+
         state.precisionTimer?.start()
         set({ status: 'running' })
 
         // Sync to collaboration if in session
         setTimeout(() => get().syncToCollaboration(), 100)
-
-        // Resume background sound if it's a study phase and background sounds are enabled
-        const audioStore = useAudioStore.getState()
-        if (
-          state.currentPhase === 'study' &&
-          audioStore.enableBackgroundSounds &&
-          audioStore.selectedBackgroundSound
-        ) {
-          audioStore.playBackgroundSound(audioStore.selectedBackgroundSound)
-        }
       },
 
       stopTimer: () => {
         const state = get()
-        
+
         // Check if we can control the timer (not in collaboration or we're the host)
         const collaborationStore = useCollaborationStore.getState()
         if (collaborationStore.isInSession && !collaborationStore.isHost) {
           return // Only host can control timer in collaboration
         }
-        
-        state.precisionTimer?.stop()
 
-        // Stop background sound when stopping timer
-        const audioStore = useAudioStore.getState()
-        if (audioStore.isBackgroundPlaying) {
-          audioStore.stopBackgroundSound()
-        }
+        state.precisionTimer?.stop()
 
         // Reset time to current phase duration
         const phaseDuration =
@@ -258,15 +227,15 @@ export const useTimerStore = create<PomodoroState>()(
 
         // Store the completed phase for notification
         const completedPhase = { phase: state.currentPhase, round: state.currentRound }
-        
+
         // Record completed session in analytics
         if (state.currentSessionStart) {
           const now = new Date()
           const startTime = new Date(state.currentSessionStart)
           const duration = Math.round((now.getTime() - startTime.getTime()) / (1000 * 60)) // Duration in minutes
-          
+
           const collaborationStore = useCollaborationStore.getState()
-          
+
           const analyticsStore = useAnalyticsStore.getState()
           analyticsStore.recordSession({
             date: now.toISOString().split('T')[0],
@@ -275,19 +244,13 @@ export const useTimerStore = create<PomodoroState>()(
             phase: state.currentPhase,
             duration,
             completed: true,
-            collaborationSession: collaborationStore.isInSession ? {
-              sessionId: collaborationStore.currentSession?.id || '',
-              participants: collaborationStore.currentSession?.participants.length || 1
-            } : undefined
+            collaborationSession: collaborationStore.isInSession
+              ? {
+                  sessionId: collaborationStore.currentSession?.id || '',
+                  participants: collaborationStore.currentSession?.participants.length || 1,
+                }
+              : undefined,
           })
-        }
-
-        // Play completion notification sound
-        const audioStore = useAudioStore.getState()
-        if (state.currentPhase === 'study') {
-          audioStore.playNotificationSound('studyEnd')
-        } else {
-          audioStore.playNotificationSound('breakEnd')
         }
 
         if (state.currentPhase === 'study') {
@@ -320,10 +283,6 @@ export const useTimerStore = create<PomodoroState>()(
         } else {
           // Break completed
           if (state.currentRound === 4) {
-            // All rounds completed - play completion sound
-            const audioStore = useAudioStore.getState()
-            audioStore.playNotificationSound('roundComplete')
-
             // All rounds completed - reset session
             set({
               currentRound: 1,
@@ -357,6 +316,12 @@ export const useTimerStore = create<PomodoroState>()(
 
       createTimer: () => {
         const state = get()
+
+        // Stop any existing timer first
+        if (state.precisionTimer) {
+          state.precisionTimer.stop()
+        }
+
         const timer = new PrecisionTimer(
           state.timeRemainingMs,
           state.handleTick,
@@ -372,58 +337,58 @@ export const useTimerStore = create<PomodoroState>()(
       syncToCollaboration: () => {
         const state = get()
         const collaborationStore = useCollaborationStore.getState()
-        
+
         if (collaborationStore.isInSession && collaborationStore.isHost) {
           const timerState = {
             isRunning: state.status === 'running',
             currentPhase: state.currentPhase,
             timeRemaining: Math.ceil(state.timeRemainingMs / 1000), // Convert to seconds
             roundsCompleted: state.currentRound - 1,
-            totalRounds: 4
+            totalRounds: 4,
           }
-          
+
           collaborationStore.updateTimerState(timerState, state.status)
         }
       },
 
-      updateFromCollaboration: (collaborationTimerState: { 
-        isRunning?: boolean; 
-        currentPhase?: TimerPhase; 
-        timeRemaining?: number; 
-        roundsCompleted?: number; 
+      updateFromCollaboration: (collaborationTimerState: {
+        isRunning?: boolean
+        currentPhase?: TimerPhase
+        timeRemaining?: number
+        roundsCompleted?: number
       }) => {
         const state = get()
-        
+
         // Don't update if we're the host (we control the timer)
         const collaborationStore = useCollaborationStore.getState()
         if (collaborationStore.isHost) return
-        
+
         // Stop current timer
         if (state.precisionTimer) {
           state.precisionTimer.stop()
         }
-        
+
         // Update state from collaboration
         const newTimeMs = (collaborationTimerState.timeRemaining || 0) * 1000
         const newPhase: TimerPhase = collaborationTimerState.currentPhase || 'study'
         const newStatus: TimerStatus = collaborationTimerState.isRunning ? 'running' : 'idle'
         const newRound = (collaborationTimerState.roundsCompleted || 0) + 1
-        
+
         // Update completed rounds
         const newCompletedRounds = [false, false, false, false]
         for (let i = 0; i < Math.min(collaborationTimerState.roundsCompleted || 0, 4); i++) {
           newCompletedRounds[i] = true
         }
-        
+
         set({
           currentRound: newRound,
           currentPhase: newPhase,
           timeRemainingMs: newTimeMs,
           status: newStatus,
           completedRounds: newCompletedRounds,
-          precisionTimer: null
+          precisionTimer: null,
         })
-        
+
         // If timer should be running, start it
         if (newStatus === 'running') {
           setTimeout(() => {

@@ -1,18 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import {
-  Timer,
-  CheckSquare,
-  FileText,
-  Image,
-  Volume2,
-  Palette,
-  Layers,
-  Settings,
-  Video,
-  Users,
-  TrendingUp,
-  Sliders,
-} from 'lucide-react'
+import { Timer, CheckSquare, FileText, Image, Video, Users } from 'lucide-react'
 import { PopupType } from '../types'
 import { useCollaborationStore } from '../stores/collaborationStore'
 
@@ -23,15 +10,10 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = () => {
   const [openPopups, setOpenPopups] = useState<string[]>([])
-  
+
   // Collaboration store
-  const { 
-    isInSession, 
-    isConnected, 
-    currentSession, 
-    setInviteModalOpen, 
-    setJoinModalOpen 
-  } = useCollaborationStore()
+  const { isInSession, isConnected, currentSession, setInviteModalOpen, setJoinModalOpen } =
+    useCollaborationStore()
 
   const tabs = useMemo(
     () => [
@@ -39,12 +21,6 @@ const Sidebar: React.FC<SidebarProps> = () => {
       { id: 'tasks' as const, icon: CheckSquare, label: 'Tasks' },
       { id: 'notes' as const, icon: FileText, label: 'Notes' },
       { id: 'background' as const, icon: Image, label: 'Background' },
-      { id: 'audio' as const, icon: Volume2, label: 'Audio' },
-      { id: 'mixer' as const, icon: Layers, label: 'Audio Mixer' },
-      { id: 'theme' as const, icon: Palette, label: 'Theme' },
-      { id: 'visual' as const, icon: Sliders, label: 'Visual' },
-      { id: 'analytics' as const, icon: TrendingUp, label: 'Analytics' },
-      { id: 'settings' as const, icon: Settings, label: 'Settings' },
     ],
     []
   )
@@ -127,12 +103,12 @@ const Sidebar: React.FC<SidebarProps> = () => {
             title={isInSession ? 'In Session' : 'Start Session'}
           >
             <Video size={20} />
-            
+
             {/* Session indicator */}
             {isInSession && (
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
             )}
-            
+
             {/* Participant count */}
             {isInSession && currentSession && (
               <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">

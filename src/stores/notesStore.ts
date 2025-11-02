@@ -1,99 +1,99 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 export interface Note {
-  id: string;
-  title: string;
-  content: string;
-  tags: string[];
-  category: string;
-  createdAt: string;
-  updatedAt: string;
-  isPinned: boolean;
-  isArchived: boolean;
-  color: string;
-  format: 'plain' | 'markdown';
-  wordCount: number;
-  charCount: number;
-  pomodoroSessionId?: string; // Link to pomodoro session when created
+  id: string
+  title: string
+  content: string
+  tags: string[]
+  category: string
+  createdAt: string
+  updatedAt: string
+  isPinned: boolean
+  isArchived: boolean
+  color: string
+  format: 'plain' | 'markdown'
+  wordCount: number
+  charCount: number
+  pomodoroSessionId?: string // Link to pomodoro session when created
 }
 
 export interface NoteCategory {
-  id: string;
-  name: string;
-  color: string;
-  icon: string;
-  description?: string;
+  id: string
+  name: string
+  color: string
+  icon: string
+  description?: string
 }
 
 export interface NotesPreferences {
-  defaultFormat: 'plain' | 'markdown';
-  autoSave: boolean;
-  autoSaveInterval: number; // in milliseconds
-  showWordCount: boolean;
-  enableMarkdownPreview: boolean;
-  defaultCategory: string;
-  sortBy: 'updatedAt' | 'createdAt' | 'title' | 'category';
-  sortOrder: 'asc' | 'desc';
-  viewMode: 'list' | 'grid' | 'compact';
+  defaultFormat: 'plain' | 'markdown'
+  autoSave: boolean
+  autoSaveInterval: number // in milliseconds
+  showWordCount: boolean
+  enableMarkdownPreview: boolean
+  defaultCategory: string
+  sortBy: 'updatedAt' | 'createdAt' | 'title' | 'category'
+  sortOrder: 'asc' | 'desc'
+  viewMode: 'list' | 'grid' | 'compact'
 }
 
 interface NotesStore {
   // Data
-  notes: Note[];
-  categories: NoteCategory[];
-  preferences: NotesPreferences;
-  
+  notes: Note[]
+  categories: NoteCategory[]
+  preferences: NotesPreferences
+
   // UI State
-  selectedNoteId: string | null;
-  searchQuery: string;
-  selectedTags: string[];
-  selectedCategory: string | null;
-  showArchived: boolean;
-  isCreating: boolean;
-  
+  selectedNoteId: string | null
+  searchQuery: string
+  selectedTags: string[]
+  selectedCategory: string | null
+  showArchived: boolean
+  isCreating: boolean
+
   // Actions
-  createNote: (noteData: Partial<Note>) => string;
-  updateNote: (id: string, updates: Partial<Note>) => void;
-  deleteNote: (id: string) => void;
-  duplicateNote: (id: string) => string;
-  
+  createNote: (noteData: Partial<Note>) => string
+  updateNote: (id: string, updates: Partial<Note>) => void
+  deleteNote: (id: string) => void
+  duplicateNote: (id: string) => string
+
   // Organization
-  addTag: (noteId: string, tag: string) => void;
-  removeTag: (noteId: string, tag: string) => void;
-  moveToCategory: (noteId: string, categoryId: string) => void;
-  togglePin: (noteId: string) => void;
-  toggleArchive: (noteId: string) => void;
-  
+  addTag: (noteId: string, tag: string) => void
+  removeTag: (noteId: string, tag: string) => void
+  moveToCategory: (noteId: string, categoryId: string) => void
+  togglePin: (noteId: string) => void
+  toggleArchive: (noteId: string) => void
+
   // Categories
-  createCategory: (category: Omit<NoteCategory, 'id'>) => string;
-  updateCategory: (id: string, updates: Partial<NoteCategory>) => void;
-  deleteCategory: (id: string) => void;
-  
+  createCategory: (category: Omit<NoteCategory, 'id'>) => string
+  updateCategory: (id: string, updates: Partial<NoteCategory>) => void
+  deleteCategory: (id: string) => void
+
   // Search and filter
-  setSearchQuery: (query: string) => void;
-  setSelectedTags: (tags: string[]) => void;
-  setSelectedCategory: (categoryId: string | null) => void;
-  toggleShowArchived: () => void;
-  
+  setSearchQuery: (query: string) => void
+  setSelectedTags: (tags: string[]) => void
+  setSelectedCategory: (categoryId: string | null) => void
+  toggleShowArchived: () => void
+
   // UI actions
-  selectNote: (noteId: string | null) => void;
-  setIsCreating: (creating: boolean) => void;
-  
+  selectNote: (noteId: string | null) => void
+  setIsCreating: (creating: boolean) => void
+
   // Preferences
-  updatePreferences: (preferences: Partial<NotesPreferences>) => void;
-  
+  updatePreferences: (preferences: Partial<NotesPreferences>) => void
+
   // Data management
-  exportNotes: (format: 'json' | 'markdown' | 'txt') => string;
-  importNotes: (data: string, format: 'json') => boolean;
-  clearAllNotes: () => void;
-  
+  exportNotes: (format: 'json' | 'markdown' | 'txt') => string
+  importNotes: (data: string, format: 'json') => boolean
+  clearAllNotes: () => void
+
   // Computed getters
-  getFilteredNotes: () => Note[];
-  getAllTags: () => string[];
-  getNotesByCategory: (categoryId: string) => Note[];
-  getPinnedNotes: () => Note[];
-  getRecentNotes: (count?: number) => Note[];
+  getFilteredNotes: () => Note[]
+  getAllTags: () => string[]
+  getNotesByCategory: (categoryId: string) => Note[]
+  getPinnedNotes: () => Note[]
+  getRecentNotes: (count?: number) => Note[]
 }
 
 // Default categories
@@ -103,37 +103,37 @@ const defaultCategories: NoteCategory[] = [
     name: 'General',
     color: '#6B7280',
     icon: '📝',
-    description: 'General notes and thoughts'
+    description: 'General notes and thoughts',
   },
   {
     id: 'work',
     name: 'Work',
     color: '#3B82F6',
     icon: '💼',
-    description: 'Work-related notes and tasks'
+    description: 'Work-related notes and tasks',
   },
   {
     id: 'study',
     name: 'Study',
     color: '#10B981',
     icon: '📚',
-    description: 'Study notes and learning materials'
+    description: 'Study notes and learning materials',
   },
   {
     id: 'personal',
     name: 'Personal',
     color: '#8B5CF6',
     icon: '🏠',
-    description: 'Personal notes and reminders'
+    description: 'Personal notes and reminders',
   },
   {
     id: 'ideas',
     name: 'Ideas',
     color: '#F59E0B',
     icon: '💡',
-    description: 'Creative ideas and inspiration'
-  }
-];
+    description: 'Creative ideas and inspiration',
+  },
+]
 
 const defaultPreferences: NotesPreferences = {
   defaultFormat: 'plain',
@@ -144,23 +144,26 @@ const defaultPreferences: NotesPreferences = {
   defaultCategory: 'general',
   sortBy: 'updatedAt',
   sortOrder: 'desc',
-  viewMode: 'list'
-};
+  viewMode: 'list',
+}
 
 // Utility functions
 const generateId = (): string => {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2);
-};
+  return Date.now().toString(36) + Math.random().toString(36).substr(2)
+}
 
 const calculateWordCount = (text: string): number => {
-  return text.trim().split(/\s+/).filter(word => word.length > 0).length;
-};
+  return text
+    .trim()
+    .split(/\s+/)
+    .filter(word => word.length > 0).length
+}
 
 const extractTags = (content: string): string[] => {
-  const tagRegex = /#(\w+)/g;
-  const matches = content.match(tagRegex);
-  return matches ? matches.map(tag => tag.slice(1).toLowerCase()) : [];
-};
+  const tagRegex = /#(\w+)/g
+  const matches = content.match(tagRegex)
+  return matches ? matches.map(tag => tag.slice(1).toLowerCase()) : []
+}
 
 export const useNotesStore = create<NotesStore>()(
   persist(
@@ -177,11 +180,11 @@ export const useNotesStore = create<NotesStore>()(
       isCreating: false,
 
       // Create new note
-      createNote: (noteData) => {
-        const id = generateId();
-        const now = new Date().toISOString();
-        const content = noteData.content || '';
-        
+      createNote: noteData => {
+        const id = generateId()
+        const now = new Date().toISOString()
+        const content = noteData.content || ''
+
         const note: Note = {
           id,
           title: noteData.title || 'Untitled Note',
@@ -196,226 +199,238 @@ export const useNotesStore = create<NotesStore>()(
           format: noteData.format || get().preferences.defaultFormat,
           wordCount: calculateWordCount(content),
           charCount: content.length,
-          pomodoroSessionId: noteData.pomodoroSessionId
-        };
+          pomodoroSessionId: noteData.pomodoroSessionId,
+        }
 
-        set((state) => ({
+        set(state => ({
           notes: [note, ...state.notes],
           selectedNoteId: id,
-          isCreating: false
-        }));
+          isCreating: false,
+        }))
 
-        return id;
+        return id
       },
 
       // Update existing note
       updateNote: (id, updates) => {
-        set((state) => ({
+        set(state => ({
           notes: state.notes.map(note => {
             if (note.id === id) {
-              const updatedContent = updates.content !== undefined ? updates.content : note.content;
+              const updatedContent = updates.content !== undefined ? updates.content : note.content
               const updatedNote = {
                 ...note,
                 ...updates,
                 updatedAt: new Date().toISOString(),
                 wordCount: updatedContent ? calculateWordCount(updatedContent) : note.wordCount,
                 charCount: updatedContent ? updatedContent.length : note.charCount,
-                tags: updates.content ? extractTags(updatedContent) : note.tags
-              };
-              return updatedNote;
+                tags: updates.content ? extractTags(updatedContent) : note.tags,
+              }
+              return updatedNote
             }
-            return note;
-          })
-        }));
+            return note
+          }),
+        }))
       },
 
       // Delete note
-      deleteNote: (id) => {
-        set((state) => ({
+      deleteNote: id => {
+        set(state => ({
           notes: state.notes.filter(note => note.id !== id),
-          selectedNoteId: state.selectedNoteId === id ? null : state.selectedNoteId
-        }));
+          selectedNoteId: state.selectedNoteId === id ? null : state.selectedNoteId,
+        }))
       },
 
       // Duplicate note
-      duplicateNote: (id) => {
-        const note = get().notes.find(n => n.id === id);
-        if (!note) return '';
+      duplicateNote: id => {
+        const note = get().notes.find(n => n.id === id)
+        if (!note) return ''
 
-        const newId = generateId();
-        const now = new Date().toISOString();
-        
+        const newId = generateId()
+        const now = new Date().toISOString()
+
         const duplicatedNote: Note = {
           ...note,
           id: newId,
           title: `${note.title} (Copy)`,
           createdAt: now,
           updatedAt: now,
-          isPinned: false
-        };
+          isPinned: false,
+        }
 
-        set((state) => ({
-          notes: [duplicatedNote, ...state.notes]
-        }));
+        set(state => ({
+          notes: [duplicatedNote, ...state.notes],
+        }))
 
-        return newId;
+        return newId
       },
 
       // Tag management
       addTag: (noteId, tag) => {
-        const cleanTag = tag.toLowerCase().trim();
-        set((state) => ({
+        const cleanTag = tag.toLowerCase().trim()
+        set(state => ({
           notes: state.notes.map(note =>
             note.id === noteId && !note.tags.includes(cleanTag)
               ? { ...note, tags: [...note.tags, cleanTag], updatedAt: new Date().toISOString() }
               : note
-          )
-        }));
+          ),
+        }))
       },
 
       removeTag: (noteId, tag) => {
-        set((state) => ({
+        set(state => ({
           notes: state.notes.map(note =>
             note.id === noteId
-              ? { ...note, tags: note.tags.filter(t => t !== tag), updatedAt: new Date().toISOString() }
+              ? {
+                  ...note,
+                  tags: note.tags.filter(t => t !== tag),
+                  updatedAt: new Date().toISOString(),
+                }
               : note
-          )
-        }));
+          ),
+        }))
       },
 
       moveToCategory: (noteId, categoryId) => {
-        set((state) => ({
+        set(state => ({
           notes: state.notes.map(note =>
             note.id === noteId
               ? { ...note, category: categoryId, updatedAt: new Date().toISOString() }
               : note
-          )
-        }));
+          ),
+        }))
       },
 
-      togglePin: (noteId) => {
-        set((state) => ({
+      togglePin: noteId => {
+        set(state => ({
           notes: state.notes.map(note =>
             note.id === noteId
               ? { ...note, isPinned: !note.isPinned, updatedAt: new Date().toISOString() }
               : note
-          )
-        }));
+          ),
+        }))
       },
 
-      toggleArchive: (noteId) => {
-        set((state) => ({
+      toggleArchive: noteId => {
+        set(state => ({
           notes: state.notes.map(note =>
             note.id === noteId
               ? { ...note, isArchived: !note.isArchived, updatedAt: new Date().toISOString() }
               : note
-          )
-        }));
+          ),
+        }))
       },
 
       // Category management
-      createCategory: (categoryData) => {
-        const id = generateId();
+      createCategory: categoryData => {
+        const id = generateId()
         const category: NoteCategory = {
           ...categoryData,
-          id
-        };
+          id,
+        }
 
-        set((state) => ({
-          categories: [...state.categories, category]
-        }));
+        set(state => ({
+          categories: [...state.categories, category],
+        }))
 
-        return id;
+        return id
       },
 
       updateCategory: (id, updates) => {
-        set((state) => ({
-          categories: state.categories.map(cat =>
-            cat.id === id ? { ...cat, ...updates } : cat
-          )
-        }));
+        set(state => ({
+          categories: state.categories.map(cat => (cat.id === id ? { ...cat, ...updates } : cat)),
+        }))
       },
 
-      deleteCategory: (id) => {
+      deleteCategory: id => {
         // Move notes to default category before deleting
-        const defaultCategory = get().preferences.defaultCategory;
-        
-        set((state) => ({
+        const defaultCategory = get().preferences.defaultCategory
+
+        set(state => ({
           categories: state.categories.filter(cat => cat.id !== id),
           notes: state.notes.map(note =>
             note.category === id
               ? { ...note, category: defaultCategory, updatedAt: new Date().toISOString() }
               : note
-          )
-        }));
+          ),
+        }))
       },
 
       // Search and filter
-      setSearchQuery: (query) => set({ searchQuery: query }),
-      setSelectedTags: (tags) => set({ selectedTags: tags }),
-      setSelectedCategory: (categoryId) => set({ selectedCategory: categoryId }),
-      toggleShowArchived: () => set((state) => ({ showArchived: !state.showArchived })),
+      setSearchQuery: query => set({ searchQuery: query }),
+      setSelectedTags: tags => set({ selectedTags: tags }),
+      setSelectedCategory: categoryId => set({ selectedCategory: categoryId }),
+      toggleShowArchived: () => set(state => ({ showArchived: !state.showArchived })),
 
       // UI actions
-      selectNote: (noteId) => set({ selectedNoteId: noteId }),
-      setIsCreating: (creating) => set({ isCreating: creating }),
+      selectNote: noteId => set({ selectedNoteId: noteId }),
+      setIsCreating: creating => set({ isCreating: creating }),
 
       // Preferences
-      updatePreferences: (newPreferences) => {
-        set((state) => ({
-          preferences: { ...state.preferences, ...newPreferences }
-        }));
+      updatePreferences: newPreferences => {
+        set(state => ({
+          preferences: { ...state.preferences, ...newPreferences },
+        }))
       },
 
       // Data management
-      exportNotes: (format) => {
-        const notes = get().notes.filter(note => !note.isArchived);
-        const categories = get().categories;
-        
+      exportNotes: format => {
+        const notes = get().notes.filter(note => !note.isArchived)
+        const categories = get().categories
+
         switch (format) {
           case 'json':
-            return JSON.stringify({
-              notes,
-              categories,
-              exportedAt: new Date().toISOString(),
-              version: '1.0'
-            }, null, 2);
-            
+            return JSON.stringify(
+              {
+                notes,
+                categories,
+                exportedAt: new Date().toISOString(),
+                version: '1.0',
+              },
+              null,
+              2
+            )
+
           case 'markdown':
-            return notes.map(note => {
-              const category = categories.find(c => c.id === note.category);
-              return `# ${note.title}\n\n` +
-                     `**Category:** ${category?.name || 'Unknown'}\n` +
-                     `**Tags:** ${note.tags.map(t => `#${t}`).join(' ')}\n` +
-                     `**Created:** ${new Date(note.createdAt).toLocaleDateString()}\n` +
-                     `**Updated:** ${new Date(note.updatedAt).toLocaleDateString()}\n\n` +
-                     `${note.content}\n\n---\n\n`;
-            }).join('');
-            
+            return notes
+              .map(note => {
+                const category = categories.find(c => c.id === note.category)
+                return (
+                  `# ${note.title}\n\n` +
+                  `**Category:** ${category?.name || 'Unknown'}\n` +
+                  `**Tags:** ${note.tags.map(t => `#${t}`).join(' ')}\n` +
+                  `**Created:** ${new Date(note.createdAt).toLocaleDateString()}\n` +
+                  `**Updated:** ${new Date(note.updatedAt).toLocaleDateString()}\n\n` +
+                  `${note.content}\n\n---\n\n`
+                )
+              })
+              .join('')
+
           case 'txt':
-            return notes.map(note => {
-              return `${note.title}\n${'='.repeat(note.title.length)}\n\n${note.content}\n\n`;
-            }).join('\n');
-            
+            return notes
+              .map(note => {
+                return `${note.title}\n${'='.repeat(note.title.length)}\n\n${note.content}\n\n`
+              })
+              .join('\n')
+
           default:
-            return '';
+            return ''
         }
       },
 
       importNotes: (data, format) => {
         try {
           if (format === 'json') {
-            const imported = JSON.parse(data);
+            const imported = JSON.parse(data)
             if (imported.notes && Array.isArray(imported.notes)) {
-              set((state) => ({
-                notes: [...imported.notes, ...state.notes]
-              }));
-              return true;
+              set(state => ({
+                notes: [...imported.notes, ...state.notes],
+              }))
+              return true
             }
           }
-          return false;
+          return false
         } catch {
-          return false;
+          return false
         }
       },
 
@@ -425,107 +440,108 @@ export const useNotesStore = create<NotesStore>()(
           selectedNoteId: null,
           searchQuery: '',
           selectedTags: [],
-          selectedCategory: null
-        });
+          selectedCategory: null,
+        })
       },
 
       // Computed getters
       getFilteredNotes: () => {
-        const { notes, searchQuery, selectedTags, selectedCategory, showArchived, preferences } = get();
-        
-        let filtered = notes.filter(note => {
+        const { notes, searchQuery, selectedTags, selectedCategory, showArchived, preferences } =
+          get()
+
+        const filtered = notes.filter(note => {
           // Archive filter
-          if (!showArchived && note.isArchived) return false;
-          
+          if (!showArchived && note.isArchived) return false
+
           // Search filter
           if (searchQuery.trim()) {
-            const query = searchQuery.toLowerCase();
+            const query = searchQuery.toLowerCase()
             if (
               !note.title.toLowerCase().includes(query) &&
               !note.content.toLowerCase().includes(query) &&
               !note.tags.some(tag => tag.includes(query))
             ) {
-              return false;
+              return false
             }
           }
-          
+
           // Tags filter
           if (selectedTags.length > 0) {
             if (!selectedTags.every(tag => note.tags.includes(tag))) {
-              return false;
+              return false
             }
           }
-          
+
           // Category filter
           if (selectedCategory && note.category !== selectedCategory) {
-            return false;
+            return false
           }
-          
-          return true;
-        });
+
+          return true
+        })
 
         // Sort
         filtered.sort((a, b) => {
-          let aValue: string | number;
-          let bValue: string | number;
-          
+          let aValue: string | number
+          let bValue: string | number
+
           switch (preferences.sortBy) {
             case 'title':
-              aValue = a.title.toLowerCase();
-              bValue = b.title.toLowerCase();
-              break;
+              aValue = a.title.toLowerCase()
+              bValue = b.title.toLowerCase()
+              break
             case 'category':
-              aValue = a.category;
-              bValue = b.category;
-              break;
+              aValue = a.category
+              bValue = b.category
+              break
             case 'createdAt':
-              aValue = new Date(a.createdAt).getTime();
-              bValue = new Date(b.createdAt).getTime();
-              break;
+              aValue = new Date(a.createdAt).getTime()
+              bValue = new Date(b.createdAt).getTime()
+              break
             default:
-              aValue = new Date(a.updatedAt).getTime();
-              bValue = new Date(b.updatedAt).getTime();
+              aValue = new Date(a.updatedAt).getTime()
+              bValue = new Date(b.updatedAt).getTime()
           }
-          
-          const comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-          return preferences.sortOrder === 'asc' ? comparison : -comparison;
-        });
+
+          const comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0
+          return preferences.sortOrder === 'asc' ? comparison : -comparison
+        })
 
         // Pinned notes always come first
-        const pinned = filtered.filter(note => note.isPinned);
-        const unpinned = filtered.filter(note => !note.isPinned);
-        
-        return [...pinned, ...unpinned];
+        const pinned = filtered.filter(note => note.isPinned)
+        const unpinned = filtered.filter(note => !note.isPinned)
+
+        return [...pinned, ...unpinned]
       },
 
       getAllTags: () => {
-        const notes = get().notes.filter(note => !note.isArchived);
-        const allTags = notes.flatMap(note => note.tags);
-        return [...new Set(allTags)].sort();
+        const notes = get().notes.filter(note => !note.isArchived)
+        const allTags = notes.flatMap(note => note.tags)
+        return [...new Set(allTags)].sort()
       },
 
-      getNotesByCategory: (categoryId) => {
-        return get().notes.filter(note => note.category === categoryId && !note.isArchived);
+      getNotesByCategory: categoryId => {
+        return get().notes.filter(note => note.category === categoryId && !note.isArchived)
       },
 
       getPinnedNotes: () => {
-        return get().notes.filter(note => note.isPinned && !note.isArchived);
+        return get().notes.filter(note => note.isPinned && !note.isArchived)
       },
 
       getRecentNotes: (count = 5) => {
-        return get().notes
-          .filter(note => !note.isArchived)
+        return get()
+          .notes.filter(note => !note.isArchived)
           .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-          .slice(0, count);
-      }
+          .slice(0, count)
+      },
     }),
     {
       name: 'ketchew-notes-store',
-      partialize: (state) => ({
+      partialize: state => ({
         notes: state.notes,
         categories: state.categories,
-        preferences: state.preferences
-      })
+        preferences: state.preferences,
+      }),
     }
   )
-);
+)
