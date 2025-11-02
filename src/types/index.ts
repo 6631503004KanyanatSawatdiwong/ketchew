@@ -101,6 +101,7 @@ export type PopupType =
   | 'visual'
   | 'collaboration'
   | 'analytics'
+  | 'settings'
   | null
 
 // Multi-popup interface types

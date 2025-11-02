@@ -3,13 +3,14 @@ import { PopupInstance, PopupType } from '../types'
 import DraggablePopup from './DraggablePopup'
 import PomodoroTimer from './PomodoroTimer'
 import TodoList from './TodoList'
-import NotesEditor from './NotesEditor'
+import { NotesPopup } from './Notes/NotesPopup'
 import BackgroundSelector from './BackgroundSelector'
 import SoundSelector from './SoundSelector'
 import ThemeSelector from './ThemeSelector'
 import AudioMixer from './AudioMixer'
 import VisualCustomization from './VisualCustomization'
-import { AnalyticsDashboard } from './AnalyticsDashboard'
+import { AnalyticsPopup } from './Analytics/AnalyticsPopup'
+import EnhancedSettings from './EnhancedSettings'
 
 interface PopupManagerProps {
   onPopupStateChange?: (popups: PopupInstance[]) => void
@@ -90,7 +91,7 @@ const PopupManager: React.FC<PopupManagerProps> = ({ onPopupStateChange }) => {
           case 'tasks':
             return { width: 450, height: 500 }
           case 'notes':
-            return { width: 500, height: 400 }
+            return { width: 900, height: 600 }
           case 'background':
             return { width: 600, height: 450 }
           case 'audio':
@@ -101,6 +102,10 @@ const PopupManager: React.FC<PopupManagerProps> = ({ onPopupStateChange }) => {
             return { width: 700, height: 600 }
           case 'visual':
             return { width: 800, height: 700 }
+          case 'analytics':
+            return { width: 900, height: 700 }
+          case 'settings':
+            return { width: 800, height: 600 }
           default:
             return { width: 400, height: 300 }
         }
@@ -177,7 +182,7 @@ const PopupManager: React.FC<PopupManagerProps> = ({ onPopupStateChange }) => {
       case 'tasks':
         return <TodoList />
       case 'notes':
-        return <NotesEditor />
+        return <NotesPopup />
       case 'background':
         return <BackgroundSelector />
       case 'audio':
@@ -189,11 +194,13 @@ const PopupManager: React.FC<PopupManagerProps> = ({ onPopupStateChange }) => {
       case 'visual':
         return <VisualCustomization />
       case 'analytics':
-        return <AnalyticsDashboard />
+        return <AnalyticsPopup />
+      case 'settings':
+        return <EnhancedSettings isOpen={true} onClose={() => closePopup(popup.id)} />
       default:
         return <div>Unknown popup type</div>
     }
-  }, [])
+  }, [closePopup])
 
   // Expose popup manager functions globally for sidebar access
   useEffect(() => {

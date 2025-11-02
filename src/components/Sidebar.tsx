@@ -11,6 +11,7 @@ import {
   Video,
   Users,
   TrendingUp,
+  Sliders,
 } from 'lucide-react'
 import { PopupType } from '../types'
 import { useCollaborationStore } from '../stores/collaborationStore'
@@ -41,8 +42,9 @@ const Sidebar: React.FC<SidebarProps> = () => {
       { id: 'audio' as const, icon: Volume2, label: 'Audio' },
       { id: 'mixer' as const, icon: Layers, label: 'Audio Mixer' },
       { id: 'theme' as const, icon: Palette, label: 'Theme' },
-      { id: 'visual' as const, icon: Settings, label: 'Visual' },
+      { id: 'visual' as const, icon: Sliders, label: 'Visual' },
       { id: 'analytics' as const, icon: TrendingUp, label: 'Analytics' },
+      { id: 'settings' as const, icon: Settings, label: 'Settings' },
     ],
     []
   )
