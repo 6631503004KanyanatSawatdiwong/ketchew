@@ -28,15 +28,6 @@ const DesktopInterface: React.FC<DesktopInterfaceProps> = ({ background = 'minim
 
   return (
     <div className="fixed inset-0 -z-10">
-      {/* Desktop grid pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="grid grid-cols-12 gap-4 h-full p-8">
-          {Array.from({ length: 48 }).map((_, i) => (
-            <div key={i} className="border border-gray-300 rounded" />
-          ))}
-        </div>
-      </div>
-
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/5" />
     </div>
