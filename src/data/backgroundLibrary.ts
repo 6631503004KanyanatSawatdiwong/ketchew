@@ -19,6 +19,18 @@ export interface BackgroundCategory {
 
 // High-quality background images for focus and productivity
 export const BACKGROUND_LIBRARY: BackgroundImage[] = [
+  // Ketchew Default - Tomato Background
+  {
+    id: 'tomato-default',
+    name: 'Ketchew Tomato',
+    description: 'The signature Ketchew tomato background - perfect for Pomodoro sessions',
+    category: 'workspace',
+    imageUrl: '/src/images/backgrounds/Background-tomato.png',
+    tags: ['tomato', 'red', 'pomodoro', 'default', 'ketchew', 'productivity'],
+    artist: 'Ketchew Team',
+    source: 'Built-in',
+  },
+
   // Nature Category
   {
     id: 'forest-morning',

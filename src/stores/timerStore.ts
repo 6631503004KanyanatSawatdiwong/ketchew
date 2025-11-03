@@ -45,6 +45,7 @@ export interface PomodoroState {
   stopTimer: () => void
   resetSession: () => void
   skipPhase: () => void
+  switchPhase: (phase: TimerPhase) => void
   updateSettings: (newSettings: Partial<TimerSettings>) => void
 
   // UI actions
@@ -95,10 +96,14 @@ export const useTimerStore = create<PomodoroState>()(
 
         // Always create a new timer when starting
         state.createTimer()
-        const timer = state.precisionTimer
-        if (timer) {
-          timer.start()
-        }
+
+        // Start the timer after creation
+        setTimeout(() => {
+          const updatedState = get()
+          if (updatedState.precisionTimer) {
+            updatedState.precisionTimer.start()
+          }
+        }, 10)
 
         // Record session start
         const sessionStart = new Date().toISOString()
@@ -189,6 +194,38 @@ export const useTimerStore = create<PomodoroState>()(
         state.handlePhaseComplete()
       },
 
+      switchPhase: (phase: TimerPhase) => {
+        const state = get()
+
+        // Check if we can control the timer (not in collaboration or we're the host)
+        const collaborationStore = useCollaborationStore.getState()
+        if (collaborationStore.isInSession && !collaborationStore.isHost) {
+          return // Only host can control timer in collaboration
+        }
+
+        // Stop any running timer
+        state.precisionTimer?.stop()
+
+        // Calculate the duration for the new phase
+        const phaseDuration =
+          phase === 'study'
+            ? state.settings.studyDuration
+            : phase === 'shortBreak'
+              ? state.settings.shortBreakDuration
+              : state.settings.longBreakDuration
+
+        // Update the phase and time
+        set({
+          currentPhase: phase,
+          timeRemainingMs: phaseDuration * 60 * 1000,
+          status: 'idle',
+          precisionTimer: null,
+        })
+
+        // Sync to collaboration if in session
+        setTimeout(() => get().syncToCollaboration(), 100)
+      },
+
       updateSettings: (newSettings: Partial<TimerSettings>) => {
         const state = get()
         const updatedSettings = { ...state.settings, ...newSettings }
@@ -254,10 +291,7 @@ export const useTimerStore = create<PomodoroState>()(
         }
 
         if (state.currentPhase === 'study') {
-          // Study phase completed - mark round as done
-          const newCompletedRounds = [...state.completedRounds]
-          newCompletedRounds[state.currentRound - 1] = true
-
+          // Study phase completed - move to break but don't mark round as complete yet
           // Determine next phase
           const isLastRound = state.currentRound === 4
           const nextPhase: TimerPhase = isLastRound ? 'longBreak' : 'shortBreak'
@@ -270,7 +304,6 @@ export const useTimerStore = create<PomodoroState>()(
             currentPhase: nextPhase,
             timeRemainingMs: nextDuration * 60 * 1000,
             status: state.settings.autoStartBreaks ? 'running' : 'idle',
-            completedRounds: newCompletedRounds,
             showPhaseNotification: true,
             lastCompletedPhase: completedPhase,
             precisionTimer: null,
@@ -281,15 +314,18 @@ export const useTimerStore = create<PomodoroState>()(
             setTimeout(() => get().createTimer(), 100)
           }
         } else {
+          // Break completed - NOW mark the round as complete
+          const newCompletedRounds = [...state.completedRounds]
+          newCompletedRounds[state.currentRound - 1] = true
           // Break completed
           if (state.currentRound === 4) {
-            // All rounds completed - reset session
+            // All rounds completed - reset session with all tomatoes grey
             set({
               currentRound: 1,
               currentPhase: 'study',
               timeRemainingMs: state.settings.studyDuration * 60 * 1000,
               status: 'completed',
-              completedRounds: [false, false, false, false],
+              completedRounds: [false, false, false, false], // Reset all tomatoes to grey for new session
               showPhaseNotification: true,
               lastCompletedPhase: completedPhase,
               precisionTimer: null,
@@ -301,6 +337,7 @@ export const useTimerStore = create<PomodoroState>()(
               currentPhase: 'study',
               timeRemainingMs: state.settings.studyDuration * 60 * 1000,
               status: state.settings.autoStartStudy ? 'running' : 'idle',
+              completedRounds: newCompletedRounds, // Include completed rounds
               showPhaseNotification: true,
               lastCompletedPhase: completedPhase,
               precisionTimer: null,

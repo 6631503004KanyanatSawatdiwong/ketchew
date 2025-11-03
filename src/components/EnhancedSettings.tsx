@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { X, Settings, Bell, Monitor, Download, Upload, Trash2, RotateCcw } from 'lucide-react'
 import { useTimerStore } from '../stores/timerStore'
 import { useTaskStore } from '../stores/taskStore'
-import { useNotesStore } from '../stores/notesStore'
 import { useAnalyticsStore } from '../stores/analyticsStore'
 
 interface EnhancedSettingsProps {
@@ -14,7 +13,6 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
   const [activeTab, setActiveTab] = useState('timer')
   const { settings, updateSettings } = useTimerStore()
   const { taskSessions } = useTaskStore()
-  const { notes, clearAllNotes } = useNotesStore()
   const { sessions } = useAnalyticsStore()
 
   const [showConfirmation, setShowConfirmation] = useState<string | null>(null)
@@ -35,7 +33,6 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
 
     const data = {
       todos,
-      notes,
       analytics: sessions,
       taskSessions,
       settings,
@@ -221,15 +218,6 @@ const EnhancedSettings: React.FC<EnhancedSettingsProps> = ({ isOpen, onClose }) 
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   Clear All Tasks
-                </button>
-
-                <button
-                  onClick={() => confirmAction('clear all notes', clearAllNotes)}
-                  className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
-                  disabled={showConfirmation === 'clear all notes'}
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Clear All Notes
                 </button>
 
                 <button

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { Timer, CheckSquare, FileText, Image, Video, Users } from 'lucide-react'
+import { Timer, CheckSquare, Volume2, Image, Video, Users } from 'lucide-react'
 import { PopupType } from '../types'
 import { useCollaborationStore } from '../stores/collaborationStore'
 
@@ -19,7 +19,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
     () => [
       { id: 'timer' as const, icon: Timer, label: 'Timer' },
       { id: 'tasks' as const, icon: CheckSquare, label: 'Tasks' },
-      { id: 'notes' as const, icon: FileText, label: 'Notes' },
+      { id: 'sound' as const, icon: Volume2, label: 'Sound' },
       { id: 'background' as const, icon: Image, label: 'Background' },
     ],
     []

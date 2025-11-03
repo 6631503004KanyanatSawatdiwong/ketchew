@@ -55,9 +55,17 @@ const BackgroundSelector: React.FC = () => {
   }
 
   const handleClearBackground = () => {
-    setSelectedBackground(null)
-    setPreviewBackground(null)
-    document.body.style.backgroundImage = ''
+    // Instead of clearing completely, reset to tomato default
+    const tomatoBackground = BACKGROUND_LIBRARY.find(bg => bg.id === 'tomato-default')
+    if (tomatoBackground) {
+      setSelectedBackground('tomato-default')
+      setPreviewBackground(null)
+      document.body.style.backgroundImage = `url(${tomatoBackground.imageUrl})`
+      document.body.style.backgroundSize = 'cover'
+      document.body.style.backgroundPosition = 'center'
+      document.body.style.backgroundRepeat = 'no-repeat'
+      document.body.style.backgroundAttachment = 'fixed'
+    }
   }
 
   const toggleFavorite = (backgroundId: string) => {
@@ -95,7 +103,7 @@ const BackgroundSelector: React.FC = () => {
   }, [currentBackground])
 
   return (
-    <div className="w-96">
+    <div className="w-full h-full p-4">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold">Background Images</h2>
         <div className="flex gap-2">
@@ -109,7 +117,7 @@ const BackgroundSelector: React.FC = () => {
           <button
             onClick={handleClearBackground}
             className="p-2 text-gray-500 hover:text-gray-700 rounded"
-            title="Clear Background"
+            title="Reset to Default"
           >
             <Monitor size={20} />
           </button>

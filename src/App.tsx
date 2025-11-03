@@ -7,7 +7,6 @@ import { CreateSessionModal } from './components/CreateSessionModal'
 import { JoinSessionModal } from './components/JoinSessionModal'
 import EnhancedSettings from './components/EnhancedSettings'
 import AccessibilityPanel from './components/AccessibilityPanel'
-import PerformanceMonitor from './components/PerformanceMonitor'
 
 import { migrateTodoData, isMigrationNeeded } from './utils/migration'
 import { useThemeStore } from './stores/themeStore'
@@ -81,22 +80,64 @@ function App() {
     document.body.classList.add(`theme-${currentTheme.id}`)
   }, [currentTheme])
 
-  // Initialize default background
+  // Initialize default background - show tomato background on first load or if no valid background is set
   useEffect(() => {
-    const savedBackground = localStorage.getItem('selectedBackground')
-    if (!savedBackground) {
-      // Set a default background - use the first minimalist background
-      const defaultBg =
-        BACKGROUND_LIBRARY.find(bg => bg.category === 'minimalist') || BACKGROUND_LIBRARY[0]
-      if (defaultBg) {
-        localStorage.setItem('selectedBackground', JSON.stringify(defaultBg.id))
-        document.body.style.backgroundImage = `url(${defaultBg.imageUrl})`
+    // Find the tomato background from the library
+    const tomatoBackground = BACKGROUND_LIBRARY.find(bg => bg.id === 'tomato-default')
+
+    if (tomatoBackground) {
+      const savedBackground = localStorage.getItem('selectedBackground')
+
+      // If no saved background or saved background doesn't exist in library, use tomato
+      if (!savedBackground) {
+        // First time visitor - set tomato as default
+        document.body.style.backgroundImage = `url(${tomatoBackground.imageUrl})`
         document.body.style.backgroundSize = 'cover'
         document.body.style.backgroundPosition = 'center'
         document.body.style.backgroundRepeat = 'no-repeat'
         document.body.style.backgroundAttachment = 'fixed'
+        localStorage.setItem('selectedBackground', 'tomato-default')
+      } else {
+        // Check if saved background exists in library
+        const savedBg = BACKGROUND_LIBRARY.find(bg => bg.id === savedBackground)
+        if (savedBg) {
+          // Apply the saved background
+          document.body.style.backgroundImage = `url(${savedBg.imageUrl})`
+          document.body.style.backgroundSize = 'cover'
+          document.body.style.backgroundPosition = 'center'
+          document.body.style.backgroundRepeat = 'no-repeat'
+          document.body.style.backgroundAttachment = 'fixed'
+        } else {
+          // Saved background doesn't exist, fall back to tomato
+          document.body.style.backgroundImage = `url(${tomatoBackground.imageUrl})`
+          document.body.style.backgroundSize = 'cover'
+          document.body.style.backgroundPosition = 'center'
+          document.body.style.backgroundRepeat = 'no-repeat'
+          document.body.style.backgroundAttachment = 'fixed'
+          localStorage.setItem('selectedBackground', 'tomato-default')
+        }
       }
     }
+  }, [])
+
+  // Auto-open timer popup on first load so screen doesn't look empty
+  useEffect(() => {
+    // Small delay to ensure PopupManager is mounted and API is available
+    const timer = setTimeout(() => {
+      const popupManager = (
+        window as unknown as {
+          ketchewPopupManager?: {
+            openPopup: (type: string) => string | null
+            isPopupOpen: (type: string) => boolean
+          }
+        }
+      ).ketchewPopupManager
+      if (popupManager && !popupManager.isPopupOpen('timer')) {
+        popupManager.openPopup('timer')
+      }
+    }, 100)
+
+    return () => clearTimeout(timer)
   }, [])
 
   return (
@@ -127,9 +168,6 @@ function App() {
         isOpen={showAccessibilityPanel}
         onClose={() => setShowAccessibilityPanel(false)}
       />
-
-      {/* Performance Monitor */}
-      <PerformanceMonitor />
     </div>
   )
 }

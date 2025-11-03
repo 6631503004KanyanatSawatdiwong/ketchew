@@ -1,12 +1,13 @@
-import React from 'react'
-import { Play, Pause, Square, RotateCcw } from 'lucide-react'
-import { useTimerStore } from '../stores/timerStore'
-import TimerDisplay from './TimerDisplay'
-import TimerProgress from './TimerProgress'
+import React, { useState } from 'react'
+import { RotateCcw, Settings } from 'lucide-react'
+import { useTimerStore, TimerPhase } from '../stores/timerStore'
 import PhaseNotification from './PhaseNotification'
 import TimerSettingsPanel from './TimerSettingsPanel'
+import tomatoImage from '../images/RoundTime.png'
 
 const PomodoroTimer: React.FC = () => {
+  const [showSettings, setShowSettings] = useState(false)
+
   const {
     currentRound,
     currentPhase,
@@ -18,22 +19,40 @@ const PomodoroTimer: React.FC = () => {
     startTimer,
     pauseTimer,
     resumeTimer,
-    stopTimer,
     resetSession,
+    switchPhase,
     dismissNotification,
   } = useTimerStore()
 
-  const getPhaseLabel = () => {
-    switch (currentPhase) {
-      case 'study':
-        return 'Focus Time'
-      case 'shortBreak':
-        return 'Short Break'
-      case 'longBreak':
-        return 'Long Break'
-      default:
-        return 'Timer'
-    }
+  // Render tomato indicators for rounds
+  const renderTomatoIndicators = () => {
+    return (
+      <div className="flex justify-center gap-4 mb-8">
+        {[1, 2, 3, 4].map(round => (
+          <div
+            key={round}
+            className={`w-8 h-8 transition-all duration-300 ${
+              completedRounds[round - 1]
+                ? 'opacity-100 filter-none' // Completed: full color (red)
+                : round === currentRound
+                  ? 'opacity-75 filter-none' // Current: slightly dimmed but colorful
+                  : 'opacity-30 grayscale' // Not started: grey and dimmed
+            }`}
+          >
+            <img
+              src={tomatoImage}
+              alt={`Pomodoro round ${round}`}
+              className="w-full h-full object-contain"
+            />
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  const handlePhaseChange = (phase: TimerPhase) => {
+    // Switch to the specified phase
+    switchPhase(phase)
   }
 
   return (
@@ -47,84 +66,105 @@ const PomodoroTimer: React.FC = () => {
         />
       )}
 
-      <div className="w-full max-w-sm sm:max-w-md lg:max-w-lg mx-auto text-center px-4">
-        <h2 className="text-2xl font-bold mb-6">Pomodoro Timer</h2>
+      <div className="w-full max-w-sm mx-auto px-3 pb-2 pointer-events-auto">
+        {/* Tomato Round Indicators */}
+        {renderTomatoIndicators()}
 
-        {/* Enhanced Progress Indicator */}
-        <TimerProgress
-          currentRound={currentRound}
-          completedRounds={completedRounds}
-          currentPhase={currentPhase}
-          className="mb-8"
-        />
-
-        {/* Phase Label */}
-        <div className="mb-6">
-          <span className="text-sm font-medium text-gray-600">
-            Round {currentRound} - {getPhaseLabel()}
-          </span>
-        </div>
-
-        {/* Enhanced Timer Display */}
-        <TimerDisplay
-          timeRemainingMs={timeRemainingMs}
-          currentPhase={currentPhase}
-          status={status}
-          className="mb-8"
-        />
-
-        {/* Controls */}
-        <div className="flex justify-center gap-4">
-          {status === 'idle' || status === 'completed' ? (
-            <button onClick={startTimer} className="btn-primary flex items-center gap-2">
-              <Play size={16} />
-              Start
-            </button>
-          ) : status === 'paused' ? (
-            <button onClick={resumeTimer} className="btn-primary flex items-center gap-2">
-              <Play size={16} />
-              Resume
-            </button>
-          ) : (
-            <button onClick={pauseTimer} className="btn-secondary flex items-center gap-2">
-              <Pause size={16} />
-              Pause
-            </button>
-          )}
-
-          <button onClick={stopTimer} className="btn-secondary flex items-center gap-2">
-            <Square size={16} />
-            Stop
-          </button>
-
-          <button onClick={resetSession} className="btn-secondary flex items-center gap-2">
-            <RotateCcw size={16} />
-            Reset
-          </button>
-        </div>
-
-        {/* Simple Manual Phase Transition */}
-        {(status === 'running' || status === 'paused') && (
-          <div className="mt-4">
+        {/* Large Timer Display */}
+        <div className="text-center mb-6">
+          <div className="flex items-center justify-center gap-6 mb-4">
+            {/* Time Display */}
+            <div className="text-5xl font-bold font-mono text-gray-900">
+              {Math.floor(timeRemainingMs / 60000)
+                .toString()
+                .padStart(2, '0')}
+              :
+              {Math.floor((timeRemainingMs % 60000) / 1000)
+                .toString()
+                .padStart(2, '0')}
+            </div>
+            {/* Start/Pause Button */}
+            {status === 'idle' || status === 'completed' ? (
+              <button
+                onClick={startTimer}
+                className="bg-white border-1 border-gray-500 text-gray-800 px-8 py-1 rounded-full font-medium shadow-sm hover:shadow-md transition-shadow text-sm"
+              >
+                Start
+              </button>
+            ) : status === 'paused' ? (
+              <button
+                onClick={resumeTimer}
+                className="bg-white text-gray-800 px-6 py-1 rounded-full font-medium shadow-sm hover:shadow-md transition-shadow text-sm"
+              >
+                Resume
+              </button>
+            ) : (
+              <button
+                onClick={pauseTimer}
+                className="bg-white text-gray-800 px-7 py-1 rounded-full font-medium shadow-sm hover:shadow-md transition-shadow text-sm"
+              >
+                Pause
+              </button>
+            )}
+            {/* Reset Button */}
             <button
-              onClick={() => {
-                if (status === 'running') {
-                  stopTimer()
-                }
-                const { handlePhaseComplete } = useTimerStore.getState()
-                handlePhaseComplete()
-              }}
-              className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              onClick={resetSession}
+              className="p-2 text-gray-600 hover:text-gray-800 transition-colors"
             >
-              Skip to next phase
+              <RotateCcw size={16} />
             </button>
           </div>
-        )}
-
-        {/* Enhanced Timer Settings */}
-        <div className="mt-8 pt-6 border-t border-gray-200 relative">
-          <TimerSettingsPanel />
         </div>
+
+        {/* Phase Tabs */}
+        <div className="flex justify-between mb-2">
+          <button
+            onClick={() => handlePhaseChange('study')}
+            className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
+              currentPhase === 'study'
+                ? 'border-red-700 text-red-700'
+                : 'border-transparent text-gray-700 hover:text-black'
+            }`}
+          >
+            Pomodoro
+          </button>
+          <button
+            onClick={() => handlePhaseChange('shortBreak')}
+            className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
+              currentPhase === 'shortBreak'
+                ? 'border-red-700 text-red-700'
+                : 'border-transparent text-gray-700 hover:text-black'
+            }`}
+          >
+            Short Break
+          </button>
+          <button
+            onClick={() => handlePhaseChange('longBreak')}
+            className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
+              currentPhase === 'longBreak'
+                ? 'border-red-700 text-red-700'
+                : 'border-transparent text-gray-700 hover:text-black'
+            }`}
+          >
+            Long Break
+          </button>
+          {/* Settings Icon */}
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className={`p-2 rounded-full transition-colors ${
+              showSettings ? 'text-red-600' : 'text-gray-700 hover:text-black'
+            }`}
+          >
+            <Settings size={20} />
+          </button>
+        </div>
+
+        {/* Expandable Settings Panel */}
+        {showSettings && (
+          <div className="mt-4 pt-2 animate-in slide-in-from-top-5 duration-200">
+            <TimerSettingsPanel onClose={() => setShowSettings(false)} />
+          </div>
+        )}
       </div>
     </>
   )

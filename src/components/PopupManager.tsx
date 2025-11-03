@@ -3,7 +3,7 @@ import { PopupInstance, PopupType } from '../types'
 import DraggablePopup from './DraggablePopup'
 import PomodoroTimer from './PomodoroTimer'
 import TodoList from './TodoList'
-import { NotesPopup } from './Notes/NotesPopup'
+import SoundSelector from './SoundSelector'
 import BackgroundSelector from './BackgroundSelector'
 
 interface PopupManagerProps {
@@ -81,11 +81,11 @@ const PopupManager: React.FC<PopupManagerProps> = ({ onPopupStateChange }) => {
       const getDefaultSize = (popupType: Exclude<PopupType, null>) => {
         switch (popupType) {
           case 'timer':
-            return { width: 400, height: 350 }
+            return { width: 484, height: 250 } // 440 + 10% = 484px, minimum height of 250px
           case 'tasks':
             return { width: 450, height: 500 }
-          case 'notes':
-            return { width: 900, height: 600 }
+          case 'sound':
+            return { width: 500, height: 600 }
           case 'background':
             return { width: 600, height: 450 }
           default:
@@ -157,14 +157,20 @@ const PopupManager: React.FC<PopupManagerProps> = ({ onPopupStateChange }) => {
     )
   }, [calculateCascadePosition])
 
+  const clearSavedState = useCallback(() => {
+    sessionStorage.removeItem('ketchew-popup-state')
+    setPopups([])
+    console.log('Popup state cleared - new popups will use default sizes')
+  }, [])
+
   const renderPopupContent = useCallback((popup: PopupInstance) => {
     switch (popup.type) {
       case 'timer':
         return <PomodoroTimer />
       case 'tasks':
         return <TodoList />
-      case 'notes':
-        return <NotesPopup />
+      case 'sound':
+        return <SoundSelector />
       case 'background':
         return <BackgroundSelector />
       default:
@@ -182,6 +188,7 @@ const PopupManager: React.FC<PopupManagerProps> = ({ onPopupStateChange }) => {
       cascadePopups: () => void
       getOpenPopups: () => PopupInstance[]
       isPopupOpen: (type: string) => boolean
+      clearSavedState: () => void
     }
 
     const api: PopupManagerAPI = {
@@ -192,6 +199,7 @@ const PopupManager: React.FC<PopupManagerProps> = ({ onPopupStateChange }) => {
       cascadePopups,
       getOpenPopups: () => popups,
       isPopupOpen: (type: string) => popups.some(p => p.type === type),
+      clearSavedState,
     }
 
     ;(window as unknown as { ketchewPopupManager: PopupManagerAPI }).ketchewPopupManager = api
@@ -199,7 +207,7 @@ const PopupManager: React.FC<PopupManagerProps> = ({ onPopupStateChange }) => {
     return () => {
       delete (window as unknown as { ketchewPopupManager?: PopupManagerAPI }).ketchewPopupManager
     }
-  }, [openPopup, closePopup, focusPopup, minimizePopup, cascadePopups, popups])
+  }, [openPopup, closePopup, focusPopup, minimizePopup, cascadePopups, clearSavedState, popups])
 
   return (
     <div className="popup-manager">
@@ -210,8 +218,6 @@ const PopupManager: React.FC<PopupManagerProps> = ({ onPopupStateChange }) => {
           onDrag={updatePopupPosition}
           onDragEnd={handleDragEnd}
           onFocus={focusPopup}
-          onClose={closePopup}
-          onMinimize={minimizePopup}
           onResize={updatePopupSize}
         >
           {renderPopupContent(popup)}
