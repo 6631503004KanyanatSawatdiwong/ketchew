@@ -120,7 +120,11 @@ const DraggablePopup: React.FC<DraggablePopupProps> = ({
               ? 'overflow-visible'
               : popup.type === 'background'
                 ? 'overflow-auto h-full'
-                : 'overflow-auto p-4'
+                : popup.type === 'tasks'
+                  ? 'overflow-hidden p-4 h-full'
+                  : popup.type === 'sound'
+                    ? 'overflow-hidden h-full'
+                    : 'overflow-auto p-4'
           }`}
           style={
             popup.type === 'timer'
@@ -133,7 +137,16 @@ const DraggablePopup: React.FC<DraggablePopupProps> = ({
                     height: 'calc(100% - 24px)', // Account for header height
                     padding: '0',
                   }
-                : undefined
+                : popup.type === 'tasks'
+                  ? {
+                      height: 'calc(100% - 24px)', // Account for header height
+                    }
+                  : popup.type === 'sound'
+                    ? {
+                        height: 'calc(100% - 24px)', // Account for header height
+                        padding: '0',
+                      }
+                    : undefined
           }
         >
           {children}

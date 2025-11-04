@@ -83,9 +83,9 @@ const PopupManager: React.FC<PopupManagerProps> = ({ onPopupStateChange }) => {
           case 'timer':
             return { width: 484, height: 250 } // 440 + 10% = 484px, minimum height of 250px
           case 'tasks':
-            return { width: 450, height: 500 }
+            return { width: 250, height: 300 } // Reduced width for more compact layout
           case 'sound':
-            return { width: 500, height: 600 }
+            return { width: 280, height: 320 } // Compact size with scrolling
           case 'background':
             return { width: 600, height: 450 }
           default:
@@ -189,6 +189,7 @@ const PopupManager: React.FC<PopupManagerProps> = ({ onPopupStateChange }) => {
       getOpenPopups: () => PopupInstance[]
       isPopupOpen: (type: string) => boolean
       clearSavedState: () => void
+      updatePopupSize: (id: string, size: { width: number; height: number }) => void
     }
 
     const api: PopupManagerAPI = {
@@ -200,6 +201,7 @@ const PopupManager: React.FC<PopupManagerProps> = ({ onPopupStateChange }) => {
       getOpenPopups: () => popups,
       isPopupOpen: (type: string) => popups.some(p => p.type === type),
       clearSavedState,
+      updatePopupSize,
     }
 
     ;(window as unknown as { ketchewPopupManager: PopupManagerAPI }).ketchewPopupManager = api
@@ -207,7 +209,16 @@ const PopupManager: React.FC<PopupManagerProps> = ({ onPopupStateChange }) => {
     return () => {
       delete (window as unknown as { ketchewPopupManager?: PopupManagerAPI }).ketchewPopupManager
     }
-  }, [openPopup, closePopup, focusPopup, minimizePopup, cascadePopups, clearSavedState, popups])
+  }, [
+    openPopup,
+    closePopup,
+    focusPopup,
+    minimizePopup,
+    cascadePopups,
+    clearSavedState,
+    updatePopupSize,
+    popups,
+  ])
 
   return (
     <div className="popup-manager">
