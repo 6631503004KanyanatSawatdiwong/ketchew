@@ -3,8 +3,11 @@ import DesktopInterface from './components/DesktopInterface'
 import Sidebar from './components/Sidebar'
 import PopupManager from './components/PopupManager'
 import { CollaborationChat } from './components/CollaborationChat'
+import { CollaborationHeader } from './components/CollaborationHeader'
 import { CreateSessionModal } from './components/CreateSessionModal'
 import { JoinSessionModal } from './components/JoinSessionModal'
+import { InviteLinkModal } from './components/InviteLinkModal'
+import { AvatarSelectorModal } from './components/AvatarSelectorModal'
 import EnhancedSettings from './components/EnhancedSettings'
 import AccessibilityPanel from './components/AccessibilityPanel'
 
@@ -23,8 +26,17 @@ function App() {
   const { currentTheme } = useThemeStore()
 
   // Initialize collaboration system
-  const { inviteModalOpen, joinModalOpen, setInviteModalOpen, setJoinModalOpen } =
-    useCollaborationStore()
+  const {
+    inviteModalOpen,
+    joinModalOpen,
+    inviteLinkModalOpen,
+    avatarSelectorOpen,
+    currentSession,
+    setInviteModalOpen,
+    setJoinModalOpen,
+    setInviteLinkModalOpen,
+    setAvatarSelectorOpen,
+  } = useCollaborationStore()
 
   // Initialize collaboration connection
   useEffect(() => {
@@ -157,6 +169,9 @@ function App() {
       {/* Multi-popup manager system */}
       <PopupManager />
 
+      {/* Collaboration header in top-right */}
+      <CollaborationHeader />
+
       {/* Collaboration chat system */}
       <CollaborationChat />
 
@@ -169,6 +184,15 @@ function App() {
           setJoinSessionId('')
         }}
         initialSessionId={joinSessionId}
+      />
+      <InviteLinkModal
+        isOpen={inviteLinkModalOpen}
+        onClose={() => setInviteLinkModalOpen(false)}
+        sessionId={currentSession?.id || ''}
+      />
+      <AvatarSelectorModal
+        isOpen={avatarSelectorOpen}
+        onClose={() => setAvatarSelectorOpen(false)}
       />
 
       {/* Phase 8 Components */}

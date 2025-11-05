@@ -15,11 +15,11 @@ export const JoinSessionModal: React.FC<JoinSessionModalProps> = ({
 }) => {
   const [sessionId, setSessionId] = useState('')
   const [nickname, setNickname] = useState('')
-  const [selectedAvatar, setSelectedAvatar] = useState('🐶')
+  const [selectedAvatar, setSelectedAvatar] = useState('red')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const { joinSession, isConnected } = useCollaborationStore()
+  const { joinSession, isConnected, userAvatar } = useCollaborationStore()
 
   // Update sessionId when initialSessionId changes
   useEffect(() => {
@@ -28,23 +28,19 @@ export const JoinSessionModal: React.FC<JoinSessionModalProps> = ({
     }
   }, [initialSessionId])
 
-  const avatars = [
-    '🐱',
-    '🐶',
-    '🐭',
-    '🐹',
-    '🐰',
-    '🦊',
-    '🐻',
-    '🐼',
-    '🐨',
-    '🐯',
-    '🦁',
-    '🐸',
-    '🐵',
-    '🐧',
-    '🐦',
-    '🦉',
+  // Use current user avatar as default
+  useEffect(() => {
+    if (userAvatar) {
+      setSelectedAvatar(userAvatar)
+    }
+  }, [userAvatar])
+
+  // Tomato avatar options
+  const tomatoAvatars = [
+    { id: 'red', name: 'Red Tomato', src: '/images/avatars/tomatoRed.png' },
+    { id: 'blue', name: 'Blue Tomato', src: '/images/avatars/tomatoBlue.png' },
+    { id: 'purple', name: 'Purple Tomato', src: '/images/avatars/tomatoPurple.png' },
+    { id: 'yellow', name: 'Yellow Tomato', src: '/images/avatars/tomatoYellow.png' },
   ]
 
   const handleJoinSession = async () => {
@@ -98,7 +94,7 @@ export const JoinSessionModal: React.FC<JoinSessionModalProps> = ({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Join Session</h2>
@@ -149,19 +145,20 @@ export const JoinSessionModal: React.FC<JoinSessionModalProps> = ({
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Choose Avatar
           </label>
-          <div className="grid grid-cols-8 gap-2">
-            {avatars.map(avatar => (
+          <div className="grid grid-cols-4 gap-3">
+            {tomatoAvatars.map(avatar => (
               <button
-                key={avatar}
-                onClick={() => setSelectedAvatar(avatar)}
-                className={`w-8 h-8 text-lg rounded border-2 transition-colors ${
-                  selectedAvatar === avatar
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900'
+                key={avatar.id}
+                onClick={() => setSelectedAvatar(avatar.id)}
+                className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-colors ${
+                  selectedAvatar === avatar.id
+                    ? 'border-blue-500'
                     : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                 }`}
                 disabled={isLoading}
+                title={avatar.name}
               >
-                {avatar}
+                <img src={avatar.src} alt={avatar.name} className="w-full h-full object-cover" />
               </button>
             ))}
           </div>

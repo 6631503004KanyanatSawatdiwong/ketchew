@@ -66,6 +66,9 @@ interface CollaborationStore {
   joinModalOpen: boolean
   chatOpen: boolean
   participantsOpen: boolean
+  unreadMessageCount: number
+  inviteLinkModalOpen: boolean
+  avatarSelectorOpen: boolean
 
   // Actions
   connect: () => void
@@ -88,6 +91,10 @@ interface CollaborationStore {
   setJoinModalOpen: (open: boolean) => void
   setChatOpen: (open: boolean) => void
   setParticipantsOpen: (open: boolean) => void
+  setUserAvatar: (avatar: string) => void
+  markMessagesAsRead: () => void
+  setInviteLinkModalOpen: (open: boolean) => void
+  setAvatarSelectorOpen: (open: boolean) => void
 
   // Internal actions
   setSocket: (socket: Socket | null) => void
@@ -95,29 +102,6 @@ interface CollaborationStore {
   setSession: (session: SessionData | null) => void
   addChatMessage: (message: ChatMessage) => void
   updateParticipants: (participants: Participant[]) => void
-}
-
-const AVATARS = [
-  '🐱',
-  '🐶',
-  '🐭',
-  '🐹',
-  '🐰',
-  '🦊',
-  '🐻',
-  '🐼',
-  '🐨',
-  '🐯',
-  '🦁',
-  '🐸',
-  '🐵',
-  '🐧',
-  '🐦',
-  '🦉',
-]
-
-const generateRandomAvatar = () => {
-  return AVATARS[Math.floor(Math.random() * AVATARS.length)]
 }
 
 export const useCollaborationStore = create<CollaborationStore>()(
@@ -130,11 +114,14 @@ export const useCollaborationStore = create<CollaborationStore>()(
     isInSession: false,
     isHost: false,
     userNickname: '',
-    userAvatar: generateRandomAvatar(),
+    userAvatar: 'red', // Default to red tomato avatar
     inviteModalOpen: false,
     joinModalOpen: false,
     chatOpen: false,
     participantsOpen: false,
+    unreadMessageCount: 0,
+    inviteLinkModalOpen: false,
+    avatarSelectorOpen: false,
 
     // Connection management
     connect: () => {
@@ -171,7 +158,10 @@ export const useCollaborationStore = create<CollaborationStore>()(
 
       // Session events
       socket.on('participant-joined', data => {
+        console.log('👥 Participant joined event received:', data)
         const { participants } = data
+        console.log('👥 Updating participants list:', participants)
+
         set(state => ({
           currentSession: state.currentSession
             ? {
@@ -183,17 +173,73 @@ export const useCollaborationStore = create<CollaborationStore>()(
       })
 
       socket.on('participant-left', data => {
+        console.log('👥 Participant left event received:', data)
         const { participants, newHost } = data
-        set(state => ({
-          currentSession: state.currentSession
-            ? {
-                ...state.currentSession,
-                participants,
-              }
-            : null,
-          // Only update isHost if there's a new host, otherwise keep current host status
-          isHost: newHost ? newHost.nickname === state.userNickname : state.isHost,
-        }))
+
+        set(state => {
+          // Check if only the host remains (when session has 1 participant who is host)
+          // OR if there are no participants (session ended)
+          const shouldEndSession =
+            participants.length === 0 ||
+            (participants.length === 1 &&
+              participants[0]?.isHost &&
+              participants[0]?.nickname === state.userNickname)
+
+          console.log('👥 Participants remaining:', participants.length)
+          console.log('👥 Should end session:', shouldEndSession)
+          console.log('👥 Current user is host:', state.isHost)
+          console.log('👥 Remaining participants:', participants)
+
+          if (shouldEndSession) {
+            console.log('👥 Ending session - returning to no session state')
+            // End session and return to "no session" state
+            return {
+              ...state,
+              currentSession: null,
+              isInSession: false,
+              isHost: false,
+              chatOpen: false,
+              unreadMessageCount: 0,
+              inviteModalOpen: false,
+              inviteLinkModalOpen: false,
+              joinModalOpen: false,
+              avatarSelectorOpen: false,
+            }
+          }
+
+          return {
+            ...state,
+            currentSession: state.currentSession
+              ? {
+                  ...state.currentSession,
+                  participants,
+                }
+              : null,
+            // Only update isHost if there's a new host, otherwise keep current host status
+            isHost: newHost ? newHost.nickname === state.userNickname : state.isHost,
+          }
+        })
+      })
+
+      socket.on('session-ended', () => {
+        console.log('Session ended - all collaborators left')
+        set({
+          currentSession: null,
+          isInSession: false,
+          isHost: false,
+          chatOpen: false,
+          participantsOpen: false,
+          unreadMessageCount: 0,
+          inviteLinkModalOpen: false,
+        })
+
+        // Reset timer to individual mode when session ends
+        setTimeout(() => {
+          import('./timerStore').then(({ useTimerStore }) => {
+            const timerStore = useTimerStore.getState()
+            timerStore.resetToIndividualMode()
+          })
+        }, 100)
       })
 
       socket.on('timer-update', data => {
@@ -218,6 +264,7 @@ export const useCollaborationStore = create<CollaborationStore>()(
       })
 
       socket.on('new-message', (message: ChatMessage) => {
+        console.log('📨 Received new message:', message)
         get().addChatMessage(message)
       })
 
@@ -309,6 +356,8 @@ export const useCollaborationStore = create<CollaborationStore>()(
         isHost: false,
         chatOpen: false,
         participantsOpen: false,
+        unreadMessageCount: 0,
+        inviteLinkModalOpen: false,
       })
 
       console.log('✅ Collaboration state cleared')
@@ -339,8 +388,18 @@ export const useCollaborationStore = create<CollaborationStore>()(
     // UI actions
     setInviteModalOpen: (open: boolean) => set({ inviteModalOpen: open }),
     setJoinModalOpen: (open: boolean) => set({ joinModalOpen: open }),
-    setChatOpen: (open: boolean) => set({ chatOpen: open }),
+    setChatOpen: (open: boolean) => {
+      set({ chatOpen: open })
+      if (open) {
+        // Mark messages as read when chat is opened
+        set({ unreadMessageCount: 0 })
+      }
+    },
     setParticipantsOpen: (open: boolean) => set({ participantsOpen: open }),
+    setUserAvatar: (avatar: string) => set({ userAvatar: avatar }),
+    markMessagesAsRead: () => set({ unreadMessageCount: 0 }),
+    setInviteLinkModalOpen: (open: boolean) => set({ inviteLinkModalOpen: open }),
+    setAvatarSelectorOpen: (open: boolean) => set({ avatarSelectorOpen: open }),
 
     // Internal actions
     setSocket: (socket: Socket | null) => set({ socket }),
@@ -349,15 +408,37 @@ export const useCollaborationStore = create<CollaborationStore>()(
     setSession: (session: SessionData | null) =>
       set({ currentSession: session, isInSession: !!session }),
 
-    addChatMessage: (message: ChatMessage) =>
-      set(state => ({
-        currentSession: state.currentSession
+    addChatMessage: (message: ChatMessage) => {
+      const state = get()
+      console.log('💬 Adding message to store:', message)
+      console.log(
+        '💬 Current chat state - chatOpen:',
+        state.chatOpen,
+        'unreadCount:',
+        state.unreadMessageCount
+      )
+      console.log('💬 Current session chat length:', state.currentSession?.chat?.length || 0)
+
+      set(currentState => ({
+        currentSession: currentState.currentSession
           ? {
-              ...state.currentSession,
-              chat: [...state.currentSession.chat, message],
+              ...currentState.currentSession,
+              chat: [...currentState.currentSession.chat, message],
             }
           : null,
-      })),
+        // Increment unread count only if chat is closed and message is not from current user
+        unreadMessageCount:
+          !state.chatOpen && message.sender !== state.userNickname
+            ? state.unreadMessageCount + 1
+            : state.unreadMessageCount,
+      }))
+
+      const newState = get()
+      console.log(
+        '💬 After adding - session chat length:',
+        newState.currentSession?.chat?.length || 0
+      )
+    },
 
     updateParticipants: (participants: Participant[]) =>
       set(state => ({

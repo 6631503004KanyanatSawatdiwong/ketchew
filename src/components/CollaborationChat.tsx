@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Send, MessageCircle, Users, LogOut, Crown } from 'lucide-react'
+import { Send, MessageCircle } from 'lucide-react'
 import { useCollaborationStore } from '../stores/collaborationStore'
 
 export const CollaborationChat: React.FC = () => {
@@ -11,20 +11,35 @@ export const CollaborationChat: React.FC = () => {
     isInSession,
     userNickname,
     chatOpen,
-    participantsOpen,
+    unreadMessageCount,
     setChatOpen,
-    setParticipantsOpen,
     sendMessage,
-    leaveSession,
   } = useCollaborationStore()
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  const messages = currentSession?.chat || []
+
   useEffect(() => {
     scrollToBottom()
-  }, [currentSession?.chat])
+  }, [messages])
+
+  // Debug: Log when messages change
+  useEffect(() => {
+    console.log('💬 Chat messages updated:', messages.length, messages)
+    console.log('💬 Current session:', currentSession?.id)
+    console.log('💬 User nickname:', userNickname)
+  }, [messages])
+
+  // Debug: Log component state on render
+  console.log('🔄 CollaborationChat render:')
+  console.log('  - Messages count:', messages.length)
+  console.log('  - Chat open:', chatOpen)
+  console.log('  - Unread count:', unreadMessageCount)
+  console.log('  - Is in session:', isInSession)
+  console.log('  - Session ID:', currentSession?.id)
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,59 +58,8 @@ export const CollaborationChat: React.FC = () => {
 
   if (!isInSession || !currentSession) return null
 
-  const participants = currentSession.participants || []
-  const messages = currentSession.chat || []
-  const hostParticipant = participants.find(p => p.isHost)
-
   return (
-    <div className="fixed bottom-4 right-4 flex flex-col items-end gap-2 z-40">
-      {/* Participants Panel */}
-      {participantsOpen && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 w-64">
-          <div className="p-3 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between">
-              <h3 className="font-medium text-gray-900 dark:text-white">
-                Participants ({participants.length})
-              </h3>
-              <button
-                onClick={() => setParticipantsOpen(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              >
-                ×
-              </button>
-            </div>
-          </div>
-          <div className="p-2 max-h-48 overflow-y-auto">
-            {participants.map(participant => (
-              <div
-                key={participant.id}
-                className="flex items-center gap-2 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                <span className="text-lg">{participant.avatar}</span>
-                <span className="flex-1 text-sm text-gray-700 dark:text-gray-300">
-                  {participant.nickname}
-                  {participant.nickname === userNickname && ' (You)'}
-                </span>
-                {participant.isHost && (
-                  <div title="Host">
-                    <Crown className="w-3 h-3 text-yellow-500" />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-          <div className="p-2 border-t border-gray-200 dark:border-gray-700">
-            <button
-              onClick={leaveSession}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              Leave Session
-            </button>
-          </div>
-        </div>
-      )}
-
+    <div className="fixed bottom-4 right-4 flex flex-col items-end gap-2 z-[9997]">
       {/* Chat Panel */}
       {chatOpen && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 w-80">
@@ -110,11 +74,6 @@ export const CollaborationChat: React.FC = () => {
                 ×
               </button>
             </div>
-            {hostParticipant && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Host: {hostParticipant.avatar} {hostParticipant.nickname}
-              </p>
-            )}
           </div>
 
           {/* Messages */}
@@ -135,7 +94,6 @@ export const CollaborationChat: React.FC = () => {
                     }`}
                   >
                     <div className="flex items-center gap-1 text-xs opacity-75 mb-1">
-                      <span>{msg.avatar}</span>
                       <span>{msg.sender}</span>
                       <span>·</span>
                       <span>{formatTime(msg.timestamp)}</span>
@@ -177,21 +135,6 @@ export const CollaborationChat: React.FC = () => {
       {/* Control Buttons */}
       <div className="flex gap-2">
         <button
-          onClick={() => setParticipantsOpen(!participantsOpen)}
-          className={`p-3 rounded-full shadow-lg transition-colors ${
-            participantsOpen
-              ? 'bg-blue-600 text-white'
-              : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-          }`}
-          title="Participants"
-        >
-          <Users className="w-5 h-5" />
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-            {participants.length}
-          </span>
-        </button>
-
-        <button
           onClick={() => setChatOpen(!chatOpen)}
           className={`p-3 rounded-full shadow-lg transition-colors relative ${
             chatOpen
@@ -201,9 +144,9 @@ export const CollaborationChat: React.FC = () => {
           title="Chat"
         >
           <MessageCircle className="w-5 h-5" />
-          {messages.length > 0 && !chatOpen && (
+          {unreadMessageCount > 0 && !chatOpen && (
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-              {messages.length > 9 ? '9+' : messages.length}
+              {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
             </span>
           )}
         </button>

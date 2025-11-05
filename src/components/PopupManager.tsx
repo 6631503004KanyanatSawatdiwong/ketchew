@@ -87,7 +87,7 @@ const PopupManager: React.FC<PopupManagerProps> = ({ onPopupStateChange }) => {
           case 'sound':
             return { width: 280, height: 320 } // Compact size with scrolling
           case 'background':
-            return { width: 200, height: 300 } // Compact size as requested
+            return { width: 200, height: 400 } // Compact size as requested
           default:
             return { width: 400, height: 300 }
         }
