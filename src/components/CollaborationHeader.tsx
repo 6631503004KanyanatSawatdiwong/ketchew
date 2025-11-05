@@ -44,7 +44,7 @@ export const CollaborationHeader: React.FC = () => {
   if (!isInSession) {
     // Show "Tomato Room" and invite button when no session
     return (
-      <div className="fixed top-4 right-4 z-50">
+      <div className="fixed top-[50px] right-4 z-50">
         <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 px-4 py-3 flex items-center gap-3">
           {/* Avatar selector */}
           <button
@@ -76,7 +76,7 @@ export const CollaborationHeader: React.FC = () => {
 
   // Show collaborator bubbles when in session
   return (
-    <div className="fixed top-4 right-4 z-50 flex flex-col items-end gap-2">
+    <div className="fixed top-[50px] right-4 z-50 flex flex-col items-end gap-2">
       {/* Main session header - always shows HOST's info */}
       <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 px-4 py-3 flex items-center gap-3">
         {/* Host's avatar */}
