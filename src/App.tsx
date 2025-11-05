@@ -82,17 +82,19 @@ function App() {
     document.body.classList.add(`theme-${currentTheme.id}`)
   }, [currentTheme])
 
-  // Initialize default background - show tomato background on first load or if no valid background is set
+  // Initialize default background - show tomato background on first load ONLY if no background is saved
   useEffect(() => {
-    // Find the tomato background from the library
+    // Only run this initialization once when the app starts
+    const hasInitialized = sessionStorage.getItem('backgroundInitialized')
+    if (hasInitialized) return
+
     const tomatoBackground = BACKGROUND_LIBRARY.find(bg => bg.id === 'tomato-default')
 
     if (tomatoBackground) {
       const savedBackground = localStorage.getItem('selectedBackground')
 
-      // If no saved background or saved background doesn't exist in library, use tomato
+      // If no saved background, set tomato as default for first-time visitors
       if (!savedBackground) {
-        // First time visitor - set tomato as default
         document.body.style.backgroundImage = `url(${tomatoBackground.imageUrl})`
         document.body.style.backgroundSize = 'cover'
         document.body.style.backgroundPosition = 'center'
@@ -110,7 +112,7 @@ function App() {
           document.body.style.backgroundRepeat = 'no-repeat'
           document.body.style.backgroundAttachment = 'fixed'
         } else {
-          // Saved background doesn't exist, fall back to tomato
+          // Saved background doesn't exist in library, fall back to tomato
           document.body.style.backgroundImage = `url(${tomatoBackground.imageUrl})`
           document.body.style.backgroundSize = 'cover'
           document.body.style.backgroundPosition = 'center'
@@ -120,6 +122,9 @@ function App() {
         }
       }
     }
+
+    // Mark as initialized so this doesn't run again during the session
+    sessionStorage.setItem('backgroundInitialized', 'true')
   }, [])
 
   // Auto-open timer popup on first load so screen doesn't look empty
