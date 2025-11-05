@@ -12,8 +12,13 @@ const BackgroundSelector: React.FC = () => {
     'tomato-default' // Default to tomato if nothing is stored
   )
 
+  // Force a re-render when localStorage changes
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0)
+
   const handleBackgroundSelect = (backgroundId: string) => {
+    console.log('Selecting background:', backgroundId)
     setSelectedBackground(backgroundId)
+    forceUpdate() // Force re-render to update UI
 
     // Apply background immediately
     const background = BACKGROUND_LIBRARY.find(bg => bg.id === backgroundId)
@@ -26,16 +31,12 @@ const BackgroundSelector: React.FC = () => {
     }
   }
 
-  // Apply current background on component mount (only if App.tsx hasn't handled it)
+  // Apply current background on component mount - ensure selected background is displayed
   React.useEffect(() => {
-    const hasAppInitialized = sessionStorage.getItem('backgroundInitialized')
-
-    // If App.tsx has already initialized the background, don't override it
-    if (hasAppInitialized) return
-
     const currentBackground = BACKGROUND_LIBRARY.find(bg => bg.id === selectedBackground)
 
     if (currentBackground) {
+      console.log('BackgroundSelector applying background:', selectedBackground)
       document.body.style.backgroundImage = `url(${currentBackground.imageUrl})`
       document.body.style.backgroundSize = 'cover'
       document.body.style.backgroundPosition = 'center'
@@ -43,15 +44,6 @@ const BackgroundSelector: React.FC = () => {
       document.body.style.backgroundAttachment = 'fixed'
     }
   }, [selectedBackground])
-
-  // Sync background on component mount - ensure UI shows correct selection
-  React.useEffect(() => {
-    // This ensures the UI state matches what's actually displayed
-    const savedBackground = localStorage.getItem('selectedBackground')
-    if (savedBackground && savedBackground !== selectedBackground) {
-      setSelectedBackground(savedBackground)
-    }
-  }, [selectedBackground, setSelectedBackground])
 
   return (
     <div className="w-full h-full px-4 pt-0 pb-2 overflow-y-auto">
@@ -66,35 +58,37 @@ const BackgroundSelector: React.FC = () => {
 
           {/* Background Grid for this category */}
           <div className="grid grid-cols-2 gap-3 mb-4">
-            {getBackgroundsByCategory(category.id).map(background => (
-              <div
-                key={background.id}
-                className="cursor-pointer"
-                onClick={() => handleBackgroundSelect(background.id)}
-              >
+            {getBackgroundsByCategory(category.id).map(background => {
+              const isSelected = selectedBackground === background.id
+
+              return (
                 <div
-                  className={`relative rounded-xl overflow-hidden transition-all ${
-                    selectedBackground === background.id
-                      ? 'ring-2 ring-blue-500'
-                      : 'hover:ring-1 hover:ring-gray-300'
-                  }`}
+                  key={background.id}
+                  className="cursor-pointer"
+                  onClick={() => handleBackgroundSelect(background.id)}
                 >
-                  <div className="aspect-[4/3]">
-                    <img
-                      src={background.imageUrl}
-                      alt={background.name}
-                      className="w-full h-full object-cover rounded-xl"
-                      loading="lazy"
-                    />
+                  <div
+                    className={`relative rounded-xl overflow-hidden transition-all ${
+                      isSelected ? 'ring-2 ring-blue-500' : 'hover:ring-1 hover:ring-gray-300'
+                    }`}
+                  >
+                    <div className="aspect-[4/3]">
+                      <img
+                        src={background.imageUrl}
+                        alt={background.name}
+                        className="w-full h-full object-cover rounded-xl"
+                        loading="lazy"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Image name below the image */}
+                  <div className="text-xs text-gray-600 mt-1 text-center truncate">
+                    {background.name.replace('Ketchew ', '')}
                   </div>
                 </div>
-
-                {/* Image name below the image */}
-                <div className="text-xs text-gray-600 mt-1 text-center truncate">
-                  {background.name.replace('Ketchew ', '')}
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       ))}

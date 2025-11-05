@@ -84,17 +84,15 @@ function App() {
 
   // Initialize default background - show tomato background on first load ONLY if no background is saved
   useEffect(() => {
-    // Only run this initialization once when the app starts
-    const hasInitialized = sessionStorage.getItem('backgroundInitialized')
-    if (hasInitialized) return
-
     const tomatoBackground = BACKGROUND_LIBRARY.find(bg => bg.id === 'tomato-default')
 
     if (tomatoBackground) {
       const savedBackground = localStorage.getItem('selectedBackground')
 
-      // If no saved background, set tomato as default for first-time visitors
+      // Always ensure a background is applied - use tomato as default for first-time visitors
       if (!savedBackground) {
+        // First time visitor - set tomato as default
+        console.log('Setting default tomato background for first-time visitor')
         document.body.style.backgroundImage = `url(${tomatoBackground.imageUrl})`
         document.body.style.backgroundSize = 'cover'
         document.body.style.backgroundPosition = 'center'
@@ -106,6 +104,7 @@ function App() {
         const savedBg = BACKGROUND_LIBRARY.find(bg => bg.id === savedBackground)
         if (savedBg) {
           // Apply the saved background
+          console.log('Applying saved background:', savedBackground)
           document.body.style.backgroundImage = `url(${savedBg.imageUrl})`
           document.body.style.backgroundSize = 'cover'
           document.body.style.backgroundPosition = 'center'
@@ -113,6 +112,7 @@ function App() {
           document.body.style.backgroundAttachment = 'fixed'
         } else {
           // Saved background doesn't exist in library, fall back to tomato
+          console.log('Saved background not found, falling back to tomato')
           document.body.style.backgroundImage = `url(${tomatoBackground.imageUrl})`
           document.body.style.backgroundSize = 'cover'
           document.body.style.backgroundPosition = 'center'
@@ -121,10 +121,9 @@ function App() {
           localStorage.setItem('selectedBackground', 'tomato-default')
         }
       }
+    } else {
+      console.error('Tomato background not found in library')
     }
-
-    // Mark as initialized so this doesn't run again during the session
-    sessionStorage.setItem('backgroundInitialized', 'true')
   }, [])
 
   // Auto-open timer popup on first load so screen doesn't look empty
