@@ -17,6 +17,7 @@ function App() {
   // Phase 8 modal states
   const [showEnhancedSettings, setShowEnhancedSettings] = useState(false)
   const [showAccessibilityPanel, setShowAccessibilityPanel] = useState(false)
+  const [joinSessionId, setJoinSessionId] = useState('')
 
   // Initialize theme system
   const { currentTheme } = useThemeStore()
@@ -31,8 +32,9 @@ function App() {
 
     // Check for join session in URL
     const urlParams = new URLSearchParams(window.location.search)
-    const joinSessionId = urlParams.get('join')
-    if (joinSessionId) {
+    const sessionIdFromUrl = urlParams.get('join')
+    if (sessionIdFromUrl) {
+      setJoinSessionId(sessionIdFromUrl)
       setJoinModalOpen(true)
       // Clear URL parameter
       window.history.replaceState({}, document.title, window.location.pathname)
@@ -156,7 +158,14 @@ function App() {
 
       {/* Collaboration modals */}
       <CreateSessionModal isOpen={inviteModalOpen} onClose={() => setInviteModalOpen(false)} />
-      <JoinSessionModal isOpen={joinModalOpen} onClose={() => setJoinModalOpen(false)} />
+      <JoinSessionModal
+        isOpen={joinModalOpen}
+        onClose={() => {
+          setJoinModalOpen(false)
+          setJoinSessionId('')
+        }}
+        initialSessionId={joinSessionId}
+      />
 
       {/* Phase 8 Components */}
       <EnhancedSettings

@@ -1,88 +1,107 @@
-import React, { useState } from 'react';
-import { X, LogIn } from 'lucide-react';
-import { useCollaborationStore } from '../stores/collaborationStore';
+import React, { useState, useEffect } from 'react'
+import { X, LogIn } from 'lucide-react'
+import { useCollaborationStore } from '../stores/collaborationStore'
 
 interface JoinSessionModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  initialSessionId?: string;
+  isOpen: boolean
+  onClose: () => void
+  initialSessionId?: string
 }
 
-export const JoinSessionModal: React.FC<JoinSessionModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  initialSessionId = '' 
+export const JoinSessionModal: React.FC<JoinSessionModalProps> = ({
+  isOpen,
+  onClose,
+  initialSessionId = '',
 }) => {
-  const [sessionId, setSessionId] = useState(initialSessionId);
-  const [nickname, setNickname] = useState('');
-  const [selectedAvatar, setSelectedAvatar] = useState('🐶');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [sessionId, setSessionId] = useState('')
+  const [nickname, setNickname] = useState('')
+  const [selectedAvatar, setSelectedAvatar] = useState('🐶')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  const { joinSession, isConnected } = useCollaborationStore();
+  const { joinSession, isConnected } = useCollaborationStore()
+
+  // Update sessionId when initialSessionId changes
+  useEffect(() => {
+    if (initialSessionId) {
+      setSessionId(initialSessionId)
+    }
+  }, [initialSessionId])
 
   const avatars = [
-    '🐱', '🐶', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼',
-    '🐨', '🐯', '🦁', '🐸', '🐵', '🐧', '🐦', '🦉'
-  ];
+    '🐱',
+    '🐶',
+    '🐭',
+    '🐹',
+    '🐰',
+    '🦊',
+    '🐻',
+    '🐼',
+    '🐨',
+    '🐯',
+    '🦁',
+    '🐸',
+    '🐵',
+    '🐧',
+    '🐦',
+    '🦉',
+  ]
 
   const handleJoinSession = async () => {
     if (!sessionId.trim()) {
-      setError('Please enter a session ID');
-      return;
+      setError('Please enter a session ID')
+      return
     }
 
     if (!nickname.trim()) {
-      setError('Please enter a nickname');
-      return;
+      setError('Please enter a nickname')
+      return
     }
 
     if (!isConnected) {
-      setError('Not connected to collaboration server');
-      return;
+      setError('Not connected to collaboration server')
+      return
     }
 
-    setIsLoading(true);
-    setError('');
+    setIsLoading(true)
+    setError('')
 
     try {
-      const result = await joinSession(sessionId.trim(), nickname.trim(), selectedAvatar);
+      const result = await joinSession(sessionId.trim(), nickname.trim(), selectedAvatar)
       if (result.success) {
-        onClose();
-        resetModal();
+        onClose()
+        resetModal()
       } else {
-        setError(result.error || 'Failed to join session');
+        setError(result.error || 'Failed to join session')
       }
     } catch {
-      setError('Failed to join session');
+      setError('Failed to join session')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const resetModal = () => {
     if (!initialSessionId) {
-      setSessionId('');
+      setSessionId('')
     }
-    setNickname('');
-    setError('');
-    setIsLoading(false);
-  };
+    setNickname('')
+    setError('')
+    setIsLoading(false)
+  }
 
   const handleClose = () => {
-    resetModal();
-    onClose();
-  };
+    resetModal()
+    onClose()
+  }
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Join Session
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Join Session</h2>
           <button
             onClick={handleClose}
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
@@ -95,13 +114,19 @@ export const JoinSessionModal: React.FC<JoinSessionModalProps> = ({
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Session ID
           </label>
+          {initialSessionId && (
+            <p className="text-xs text-blue-600 dark:text-blue-400 mb-2">
+              Session ID from invite link
+            </p>
+          )}
           <input
             type="text"
             value={sessionId}
-            onChange={(e) => setSessionId(e.target.value)}
+            onChange={e => setSessionId(e.target.value)}
             placeholder="Enter session ID"
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
             disabled={isLoading || !!initialSessionId}
+            readOnly={!!initialSessionId}
           />
         </div>
 
@@ -112,7 +137,7 @@ export const JoinSessionModal: React.FC<JoinSessionModalProps> = ({
           <input
             type="text"
             value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
+            onChange={e => setNickname(e.target.value)}
             placeholder="Enter your nickname"
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
             maxLength={20}
@@ -125,7 +150,7 @@ export const JoinSessionModal: React.FC<JoinSessionModalProps> = ({
             Choose Avatar
           </label>
           <div className="grid grid-cols-8 gap-2">
-            {avatars.map((avatar) => (
+            {avatars.map(avatar => (
               <button
                 key={avatar}
                 onClick={() => setSelectedAvatar(avatar)}
@@ -184,5 +209,5 @@ export const JoinSessionModal: React.FC<JoinSessionModalProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

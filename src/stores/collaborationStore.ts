@@ -1,103 +1,124 @@
-import { create } from 'zustand';
-import { subscribeWithSelector } from 'zustand/middleware';
-import { io, Socket } from 'socket.io-client';
+import { create } from 'zustand'
+import { subscribeWithSelector } from 'zustand/middleware'
+import { io, Socket } from 'socket.io-client'
 
 interface Participant {
-  id: string;
-  nickname: string;
-  avatar: string;
-  isHost: boolean;
-  joinedAt: string;
+  id: string
+  nickname: string
+  avatar: string
+  isHost: boolean
+  joinedAt: string
 }
 
 interface ChatMessage {
-  id: string;
-  text: string;
-  sender: string;
-  avatar: string;
-  timestamp: string;
+  id: string
+  text: string
+  sender: string
+  avatar: string
+  timestamp: string
 }
 
 interface SessionData {
-  id: string;
-  participants: Participant[];
+  id: string
+  participants: Participant[]
   timerState: {
-    isRunning: boolean;
-    currentPhase: 'study' | 'shortBreak' | 'longBreak';
-    timeRemaining: number;
-    roundsCompleted: number;
-    totalRounds: number;
-  };
-  chat: ChatMessage[];
+    isRunning: boolean
+    currentPhase: 'study' | 'shortBreak' | 'longBreak'
+    timeRemaining: number
+    roundsCompleted: number
+    totalRounds: number
+  }
+  chat: ChatMessage[]
 }
 
 interface TimerState {
-  isRunning: boolean;
-  currentPhase: 'study' | 'shortBreak' | 'longBreak';
-  timeRemaining: number;
-  roundsCompleted: number;
-  totalRounds: number;
+  isRunning: boolean
+  currentPhase: 'study' | 'shortBreak' | 'longBreak'
+  timeRemaining: number
+  roundsCompleted: number
+  totalRounds: number
 }
 
 interface ServerResponse {
-  success: boolean;
-  sessionId?: string;
-  session?: SessionData;
-  error?: string;
+  success: boolean
+  sessionId?: string
+  session?: SessionData
+  error?: string
 }
 
 interface CollaborationStore {
   // Connection state
-  socket: Socket | null;
-  isConnected: boolean;
-  connectionError: string | null;
-  
+  socket: Socket | null
+  isConnected: boolean
+  connectionError: string | null
+
   // Session state
-  currentSession: SessionData | null;
-  isInSession: boolean;
-  isHost: boolean;
-  
+  currentSession: SessionData | null
+  isInSession: boolean
+  isHost: boolean
+
   // User state
-  userNickname: string;
-  userAvatar: string;
-  
+  userNickname: string
+  userAvatar: string
+
   // UI state
-  inviteModalOpen: boolean;
-  joinModalOpen: boolean;
-  chatOpen: boolean;
-  participantsOpen: boolean;
-  
+  inviteModalOpen: boolean
+  joinModalOpen: boolean
+  chatOpen: boolean
+  participantsOpen: boolean
+
   // Actions
-  connect: () => void;
-  disconnect: () => void;
-  createSession: (nickname: string, avatar: string) => Promise<{ success: boolean; sessionId?: string; error?: string }>;
-  joinSession: (sessionId: string, nickname: string, avatar: string) => Promise<{ success: boolean; error?: string }>;
-  leaveSession: () => void;
-  sendMessage: (text: string) => void;
-  updateTimerState: (timerState: TimerState, action: string) => void;
-  
+  connect: () => void
+  disconnect: () => void
+  createSession: (
+    nickname: string,
+    avatar: string
+  ) => Promise<{ success: boolean; sessionId?: string; error?: string }>
+  joinSession: (
+    sessionId: string,
+    nickname: string,
+    avatar: string
+  ) => Promise<{ success: boolean; error?: string }>
+  leaveSession: () => void
+  sendMessage: (text: string) => void
+  updateTimerState: (timerState: TimerState, action: string) => void
+
   // UI actions
-  setInviteModalOpen: (open: boolean) => void;
-  setJoinModalOpen: (open: boolean) => void;
-  setChatOpen: (open: boolean) => void;
-  setParticipantsOpen: (open: boolean) => void;
-  
+  setInviteModalOpen: (open: boolean) => void
+  setJoinModalOpen: (open: boolean) => void
+  setChatOpen: (open: boolean) => void
+  setParticipantsOpen: (open: boolean) => void
+
   // Internal actions
-  setSocket: (socket: Socket | null) => void;
-  setConnectionState: (connected: boolean, error?: string) => void;
-  setSession: (session: SessionData | null) => void;
-  addChatMessage: (message: ChatMessage) => void;
-  updateParticipants: (participants: Participant[]) => void;
+  setSocket: (socket: Socket | null) => void
+  setConnectionState: (connected: boolean, error?: string) => void
+  setSession: (session: SessionData | null) => void
+  addChatMessage: (message: ChatMessage) => void
+  updateParticipants: (participants: Participant[]) => void
 }
 
 const AVATARS = [
-  '🐱', '🐶', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼',
-  '🐨', '🐯', '🦁', '🐸', '🐵', '🐧', '🐦', '🦉'
-];
+  '🐱',
+  '🐶',
+  '🐭',
+  '🐹',
+  '🐰',
+  '🦊',
+  '🐻',
+  '🐼',
+  '🐨',
+  '🐯',
+  '🦁',
+  '🐸',
+  '🐵',
+  '🐧',
+  '🐦',
+  '🦉',
+]
 
 const generateRandomAvatar = () => {
-  return AVATARS[Math.floor(Math.random() * AVATARS.length)];
-};
+  return AVATARS[Math.floor(Math.random() * AVATARS.length)]
+}
 
 export const useCollaborationStore = create<CollaborationStore>()(
   subscribeWithSelector((set, get) => ({
@@ -122,101 +143,108 @@ export const useCollaborationStore = create<CollaborationStore>()(
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionAttempts: 5,
-        timeout: 10000
-      });
+        timeout: 10000,
+      })
 
       socket.on('connect', () => {
-        console.log('Connected to collaboration server');
-        set({ isConnected: true, connectionError: null });
-      });
+        console.log('Connected to collaboration server')
+        set({ isConnected: true, connectionError: null })
+      })
 
-      socket.on('disconnect', (reason) => {
-        console.log('Disconnected from server:', reason);
-        set({ isConnected: false });
-        
+      socket.on('disconnect', reason => {
+        console.log('Disconnected from server:', reason)
+        set({ isConnected: false })
+
         if (reason === 'io server disconnect') {
           // Server initiated disconnect, don't reconnect automatically
-          set({ connectionError: 'Disconnected by server' });
+          set({ connectionError: 'Disconnected by server' })
         }
-      });
+      })
 
-      socket.on('connect_error', (error) => {
-        console.error('Connection error:', error);
-        set({ 
-          isConnected: false, 
-          connectionError: 'Failed to connect to collaboration server' 
-        });
-      });
+      socket.on('connect_error', error => {
+        console.error('Connection error:', error)
+        set({
+          isConnected: false,
+          connectionError: 'Failed to connect to collaboration server',
+        })
+      })
 
       // Session events
-      socket.on('participant-joined', (data) => {
-        const { participants } = data;
-        set((state) => ({
-          currentSession: state.currentSession ? {
-            ...state.currentSession,
-            participants
-          } : null
-        }));
-      });
+      socket.on('participant-joined', data => {
+        const { participants } = data
+        set(state => ({
+          currentSession: state.currentSession
+            ? {
+                ...state.currentSession,
+                participants,
+              }
+            : null,
+        }))
+      })
 
-      socket.on('participant-left', (data) => {
-        const { participants, newHost } = data;
-        set((state) => ({
-          currentSession: state.currentSession ? {
-            ...state.currentSession,
-            participants
-          } : null,
-          isHost: newHost?.nickname === state.userNickname
-        }));
-      });
+      socket.on('participant-left', data => {
+        const { participants, newHost } = data
+        set(state => ({
+          currentSession: state.currentSession
+            ? {
+                ...state.currentSession,
+                participants,
+              }
+            : null,
+          // Only update isHost if there's a new host, otherwise keep current host status
+          isHost: newHost ? newHost.nickname === state.userNickname : state.isHost,
+        }))
+      })
 
-      socket.on('timer-update', (data) => {
-        const { timerState } = data;
-        set((state) => ({
-          currentSession: state.currentSession ? {
-            ...state.currentSession,
-            timerState
-          } : null
-        }));
+      socket.on('timer-update', data => {
+        const { timerState, action } = data
+        set(state => ({
+          currentSession: state.currentSession
+            ? {
+                ...state.currentSession,
+                timerState,
+              }
+            : null,
+        }))
 
         // Update local timer if we're not the host
         if (!get().isHost) {
           // Dynamically import to avoid circular dependency
           import('./timerStore').then(({ useTimerStore }) => {
-            const timerStore = useTimerStore.getState();
-            timerStore.updateFromCollaboration(timerState);
-          });
+            const timerStore = useTimerStore.getState()
+            timerStore.updateFromCollaboration(timerState, action)
+          })
         }
-      });
+      })
 
       socket.on('new-message', (message: ChatMessage) => {
-        get().addChatMessage(message);
-      });
+        get().addChatMessage(message)
+      })
 
-      set({ socket });
+      set({ socket })
     },
 
     disconnect: () => {
-      const { socket } = get();
+      const { socket } = get()
       if (socket) {
-        socket.disconnect();
-        set({ 
-          socket: null, 
-          isConnected: false, 
+        socket.disconnect()
+        set({
+          socket: null,
+          isConnected: false,
           currentSession: null,
           isInSession: false,
-          isHost: false 
-        });
+          isHost: false,
+        })
       }
     },
 
     createSession: async (nickname: string, avatar: string) => {
-      const { socket } = get();
+      const { socket } = get()
       if (!socket || !socket.connected) {
-        return { success: false, error: 'Not connected to server' };
+        return { success: false, error: 'Not connected to server' }
       }
 
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         socket.emit('create-session', { nickname, avatar }, (response: ServerResponse) => {
           if (response.success) {
             set({
@@ -225,70 +253,86 @@ export const useCollaborationStore = create<CollaborationStore>()(
               isHost: true,
               userNickname: nickname,
               userAvatar: avatar,
-              inviteModalOpen: false
-            });
-            resolve({ success: true, sessionId: response.sessionId });
+              inviteModalOpen: false,
+            })
+            resolve({ success: true, sessionId: response.sessionId })
           } else {
-            resolve({ success: false, error: response.error });
+            resolve({ success: false, error: response.error })
           }
-        });
-      });
+        })
+      })
     },
 
     joinSession: async (sessionId: string, nickname: string, avatar: string) => {
-      const { socket } = get();
+      const { socket } = get()
       if (!socket || !socket.connected) {
-        return { success: false, error: 'Not connected to server' };
+        return { success: false, error: 'Not connected to server' }
       }
 
-      return new Promise((resolve) => {
-        socket.emit('join-session', { 
-          sessionId, 
-          participantData: { nickname, avatar } 
-        }, (response: ServerResponse) => {
-          if (response.success) {
-            set({
-              currentSession: response.session,
-              isInSession: true,
-              isHost: false,
-              userNickname: nickname,
-              userAvatar: avatar,
-              joinModalOpen: false
-            });
-            resolve({ success: true });
-          } else {
-            resolve({ success: false, error: response.error });
+      return new Promise(resolve => {
+        socket.emit(
+          'join-session',
+          {
+            sessionId,
+            participantData: { nickname, avatar },
+          },
+          (response: ServerResponse) => {
+            if (response.success) {
+              set({
+                currentSession: response.session,
+                isInSession: true,
+                isHost: false,
+                userNickname: nickname,
+                userAvatar: avatar,
+                joinModalOpen: false,
+              })
+              resolve({ success: true })
+            } else {
+              resolve({ success: false, error: response.error })
+            }
           }
-        });
-      });
+        )
+      })
     },
 
     leaveSession: () => {
-      const { socket } = get();
+      console.log('👋 Leaving collaboration session')
+      const { socket } = get()
       if (socket) {
-        socket.emit('leave-session');
+        socket.emit('leave-session')
       }
-      
+
+      // CRITICAL: Clear collaboration state FIRST
       set({
         currentSession: null,
         isInSession: false,
         isHost: false,
         chatOpen: false,
-        participantsOpen: false
-      });
+        participantsOpen: false,
+      })
+
+      console.log('✅ Collaboration state cleared')
+
+      // Reset timer to individual mode when leaving session
+      setTimeout(() => {
+        import('./timerStore').then(({ useTimerStore }) => {
+          const timerStore = useTimerStore.getState()
+          timerStore.resetToIndividualMode()
+        })
+      }, 100) // Small delay to ensure state is properly cleared
     },
 
     sendMessage: (text: string) => {
-      const { socket } = get();
+      const { socket } = get()
       if (socket && text.trim()) {
-        socket.emit('send-message', { text: text.substring(0, 200) });
+        socket.emit('send-message', { text: text.substring(0, 200) })
       }
     },
 
     updateTimerState: (timerState: TimerState, action: string) => {
-      const { socket, isHost } = get();
+      const { socket, isHost } = get()
       if (socket && isHost) {
-        socket.emit('timer-action', { action, timerState });
+        socket.emit('timer-action', { action, timerState })
       }
     },
 
@@ -300,35 +344,41 @@ export const useCollaborationStore = create<CollaborationStore>()(
 
     // Internal actions
     setSocket: (socket: Socket | null) => set({ socket }),
-    setConnectionState: (connected: boolean, error?: string) => 
+    setConnectionState: (connected: boolean, error?: string) =>
       set({ isConnected: connected, connectionError: error }),
-    setSession: (session: SessionData | null) => 
+    setSession: (session: SessionData | null) =>
       set({ currentSession: session, isInSession: !!session }),
-    
-    addChatMessage: (message: ChatMessage) => set((state) => ({
-      currentSession: state.currentSession ? {
-        ...state.currentSession,
-        chat: [...state.currentSession.chat, message]
-      } : null
-    })),
 
-    updateParticipants: (participants: Participant[]) => set((state) => ({
-      currentSession: state.currentSession ? {
-        ...state.currentSession,
-        participants
-      } : null
-    }))
+    addChatMessage: (message: ChatMessage) =>
+      set(state => ({
+        currentSession: state.currentSession
+          ? {
+              ...state.currentSession,
+              chat: [...state.currentSession.chat, message],
+            }
+          : null,
+      })),
+
+    updateParticipants: (participants: Participant[]) =>
+      set(state => ({
+        currentSession: state.currentSession
+          ? {
+              ...state.currentSession,
+              participants,
+            }
+          : null,
+      })),
   }))
-);
+)
 
 // Auto-connect when store is first used
-let autoConnected = false;
+let autoConnected = false
 export const initializeCollaboration = () => {
   if (!autoConnected) {
-    autoConnected = true;
-    const store = useCollaborationStore.getState();
+    autoConnected = true
+    const store = useCollaborationStore.getState()
     if (!store.socket) {
-      store.connect();
+      store.connect()
     }
   }
-};
+}

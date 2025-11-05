@@ -35,8 +35,12 @@ export interface PomodoroState {
   // Internal timer reference
   precisionTimer: PrecisionTimer | null
 
+  // Collaboration display interval for non-host users
+  collaborationDisplayInterval: number | null
+
   // Session tracking
   currentSessionStart: string | null
+  lastCollaborationSync: number | null
 
   // Actions
   startTimer: () => void
@@ -58,7 +62,8 @@ export interface PomodoroState {
 
   // Collaboration actions
   syncToCollaboration: () => void
-  updateFromCollaboration: (timerState: Partial<PomodoroState>) => void
+  updateFromCollaboration: (timerState: Partial<PomodoroState>, action?: string) => void
+  resetToIndividualMode: () => void
 }
 
 const DEFAULT_SETTINGS: TimerSettings = {
@@ -82,7 +87,9 @@ export const useTimerStore = create<PomodoroState>()(
       showPhaseNotification: false,
       lastCompletedPhase: null,
       precisionTimer: null,
+      collaborationDisplayInterval: null,
       currentSessionStart: null,
+      lastCollaborationSync: null,
 
       // Timer controls
       startTimer: () => {
@@ -90,6 +97,7 @@ export const useTimerStore = create<PomodoroState>()(
 
         // Check if we can control the timer (not in collaboration or we're the host)
         const collaborationStore = useCollaborationStore.getState()
+
         if (collaborationStore.isInSession && !collaborationStore.isHost) {
           return // Only host can control timer in collaboration
         }
@@ -118,6 +126,7 @@ export const useTimerStore = create<PomodoroState>()(
 
         // Check if we can control the timer (not in collaboration or we're the host)
         const collaborationStore = useCollaborationStore.getState()
+
         if (collaborationStore.isInSession && !collaborationStore.isHost) {
           return // Only host can control timer in collaboration
         }
@@ -134,6 +143,7 @@ export const useTimerStore = create<PomodoroState>()(
 
         // Check if we can control the timer (not in collaboration or we're the host)
         const collaborationStore = useCollaborationStore.getState()
+
         if (collaborationStore.isInSession && !collaborationStore.isHost) {
           return // Only host can control timer in collaboration
         }
@@ -257,6 +267,17 @@ export const useTimerStore = create<PomodoroState>()(
       // Internal handlers
       handleTick: (remainingMs: number) => {
         set({ timeRemainingMs: remainingMs })
+
+        // Sync to collaboration every 5 seconds if we're the host
+        const collaborationStore = useCollaborationStore.getState()
+        if (collaborationStore.isInSession && collaborationStore.isHost) {
+          const now = Date.now()
+          const state = get()
+          if (!state.lastCollaborationSync || now - state.lastCollaborationSync >= 5000) {
+            state.syncToCollaboration()
+            set({ lastCollaborationSync: now })
+          }
+        }
       },
 
       handlePhaseComplete: () => {
@@ -376,10 +397,20 @@ export const useTimerStore = create<PomodoroState>()(
         const collaborationStore = useCollaborationStore.getState()
 
         if (collaborationStore.isInSession && collaborationStore.isHost) {
+          // Get accurate remaining time from timer if it's running, otherwise use state
+          let accurateTimeRemaining = state.timeRemainingMs
+          if (state.precisionTimer && state.status === 'running') {
+            // Get the actual remaining time from the timer for accuracy
+            const timerRemaining = state.precisionTimer.getRemainingTime()
+            if (timerRemaining >= 0) {
+              accurateTimeRemaining = timerRemaining
+            }
+          }
+
           const timerState = {
             isRunning: state.status === 'running',
             currentPhase: state.currentPhase,
-            timeRemaining: Math.ceil(state.timeRemainingMs / 1000), // Convert to seconds
+            timeRemaining: Math.ceil(accurateTimeRemaining / 1000), // Convert to seconds
             roundsCompleted: state.currentRound - 1,
             totalRounds: 4,
           }
@@ -388,28 +419,57 @@ export const useTimerStore = create<PomodoroState>()(
         }
       },
 
-      updateFromCollaboration: (collaborationTimerState: {
-        isRunning?: boolean
-        currentPhase?: TimerPhase
-        timeRemaining?: number
-        roundsCompleted?: number
-      }) => {
+      updateFromCollaboration: (
+        collaborationTimerState: {
+          isRunning?: boolean
+          currentPhase?: TimerPhase
+          timeRemaining?: number
+          roundsCompleted?: number
+        },
+        action?: string
+      ) => {
         const state = get()
-
-        // Don't update if we're the host (we control the timer)
         const collaborationStore = useCollaborationStore.getState()
-        if (collaborationStore.isHost) return
 
-        // Stop current timer
+        // CRITICAL: Don't update if we're the host OR not in a session
+        if (collaborationStore.isHost || !collaborationStore.isInSession) {
+          return
+        }
+
+        // STOP any existing timer - collaborators should never run their own timers
         if (state.precisionTimer) {
           state.precisionTimer.stop()
+        }
+
+        // Stop any existing display interval
+        if (state.collaborationDisplayInterval) {
+          clearInterval(state.collaborationDisplayInterval)
         }
 
         // Update state from collaboration
         const newTimeMs = (collaborationTimerState.timeRemaining || 0) * 1000
         const newPhase: TimerPhase = collaborationTimerState.currentPhase || 'study'
-        const newStatus: TimerStatus = collaborationTimerState.isRunning ? 'running' : 'idle'
         const newRound = (collaborationTimerState.roundsCompleted || 0) + 1
+
+        // Use the action parameter to determine the correct status
+        let newStatus: TimerStatus
+        if (action) {
+          if (action === 'running') {
+            newStatus = 'running'
+          } else if (action === 'paused') {
+            newStatus = 'paused'
+          } else {
+            newStatus = 'idle'
+          }
+        } else {
+          if (collaborationTimerState.isRunning) {
+            newStatus = 'running'
+          } else if (newTimeMs > 0) {
+            newStatus = 'paused'
+          } else {
+            newStatus = 'idle'
+          }
+        }
 
         // Update completed rounds
         const newCompletedRounds = [false, false, false, false]
@@ -417,22 +477,89 @@ export const useTimerStore = create<PomodoroState>()(
           newCompletedRounds[i] = true
         }
 
+        // For collaborators: ONLY update display state, never create real timers
         set({
           currentRound: newRound,
           currentPhase: newPhase,
           timeRemainingMs: newTimeMs,
           status: newStatus,
           completedRounds: newCompletedRounds,
-          precisionTimer: null,
+          precisionTimer: null, // Collaborators never have their own timer
+          collaborationDisplayInterval: null,
         })
 
-        // If timer should be running, start it
+        // If status is running, we need to simulate countdown for display only
         if (newStatus === 'running') {
+          // Start a display-only countdown that just updates the UI
+          const startTime = performance.now()
+          const startingTime = newTimeMs
+
+          const displayInterval = setInterval(() => {
+            const elapsed = performance.now() - startTime
+            const remaining = Math.max(0, startingTime - elapsed)
+
+            // Only update if we're still in collaboration and not the host
+            const currentCollabStore = useCollaborationStore.getState()
+            if (!currentCollabStore.isInSession || currentCollabStore.isHost) {
+              clearInterval(displayInterval)
+              return
+            }
+
+            set({ timeRemainingMs: remaining })
+
+            // Stop when time runs out
+            if (remaining <= 0) {
+              clearInterval(displayInterval)
+            }
+          }, 100)
+
+          // Store interval ID for cleanup
+          set({ collaborationDisplayInterval: displayInterval })
+        }
+      },
+
+      resetToIndividualMode: () => {
+        const state = get()
+
+        // CRITICAL: Stop and clear any running timer immediately
+        if (state.precisionTimer) {
+          state.precisionTimer.stop()
+        }
+
+        // Stop collaboration display interval
+        if (state.collaborationDisplayInterval) {
+          clearInterval(state.collaborationDisplayInterval)
+        }
+
+        // Clear timer references immediately to prevent any race conditions
+        set({
+          precisionTimer: null,
+          collaborationDisplayInterval: null,
+        })
+
+        // Set timer to paused state with current remaining time
+        // This allows user to resume or restart as needed
+        const newStatus: TimerStatus = state.timeRemainingMs > 0 ? 'paused' : 'idle'
+
+        // Update status immediately
+        set({
+          status: newStatus,
+          precisionTimer: null,
+          collaborationDisplayInterval: null,
+        })
+
+        // Create a fresh timer in paused state if there's time remaining
+        if (state.timeRemainingMs > 0) {
           setTimeout(() => {
             const updatedState = get()
+            // Double-check we're not in collaboration mode
+            const collaborationStore = useCollaborationStore.getState()
+            if (collaborationStore.isInSession) {
+              return
+            }
+
             updatedState.createTimer()
-            updatedState.precisionTimer?.start()
-          }, 100)
+          }, 50)
         }
       },
     }),

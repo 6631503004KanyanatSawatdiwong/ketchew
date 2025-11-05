@@ -83,7 +83,7 @@ const PopupManager: React.FC<PopupManagerProps> = ({ onPopupStateChange }) => {
           case 'timer':
             return { width: 484, height: 250 } // 440 + 10% = 484px, minimum height of 250px
           case 'tasks':
-            return { width: 250, height: 300 } // Reduced width for more compact layout
+            return { width: 150, height: 200 } // Very compact task popup
           case 'sound':
             return { width: 280, height: 320 } // Compact size with scrolling
           case 'background':

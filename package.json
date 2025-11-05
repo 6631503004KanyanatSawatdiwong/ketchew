@@ -12,7 +12,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test:timer-accuracy": "node scripts/test-timer-accuracy.js",
-    "prepare": "husky"
+    "prepare": "husky",
+    "server": "cd server && npm run dev",
+    "server:start": "cd server && npm start"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [

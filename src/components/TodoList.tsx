@@ -259,29 +259,24 @@ const TodoList: React.FC = () => {
   useEffect(() => {
     // Small delay to ensure state updates are complete
     const timer = setTimeout(() => {
-      const taskCount = todos.length
-
       // Base height includes: title (48px) + form area (~80px) + padding (32px) = ~160px
       const baseHeight = 160
 
-      if (taskCount === 0) {
-        // When no tasks, we have the "No tasks yet" message (~64px)
-        const targetHeight = Math.max(300, baseHeight + 64)
-        updatePopupHeight(Math.min(targetHeight, 400))
-      } else {
-        // Each task item is approximately 60px height (including spacing)
-        const taskItemHeight = 60
-        const tasksHeight = taskCount * taskItemHeight
+      // Calculate height for at least 1 task to maintain consistent size
+      const taskCount = Math.max(todos.length, 1) // Treat 0 tasks as 1 task for height calculation
 
-        // Add space for "Clear All" actions when there are tasks (~45px for tighter spacing)
-        const actionsHeight = 40
+      // Each task item is approximately 60px height (including spacing)
+      const taskItemHeight = 60
+      const tasksHeight = taskCount * taskItemHeight
 
-        // Small buffer to ensure clear buttons are visible without excess space
-        const bufferSpace = 5
+      // Add space for "Clear All" actions when there are tasks (~45px for tighter spacing)
+      const actionsHeight = 40
 
-        const targetHeight = baseHeight + tasksHeight + actionsHeight + bufferSpace
-        updatePopupHeight(Math.min(targetHeight, 500))
-      }
+      // Small buffer to ensure clear buttons are visible without excess space
+      const bufferSpace = 10
+
+      const targetHeight = baseHeight + tasksHeight + actionsHeight + bufferSpace
+      updatePopupHeight(Math.min(targetHeight, 500))
     }, 50) // Small delay to ensure DOM updates
 
     return () => clearTimeout(timer)
@@ -301,14 +296,14 @@ const TodoList: React.FC = () => {
       const openPopups = popupManager.getOpenPopups()
       const tasksPopup = openPopups.find(p => p.type === 'tasks')
       if (tasksPopup) {
-        popupManager.updatePopupSize(tasksPopup.id, { width: 450, height })
+        popupManager.updatePopupSize(tasksPopup.id, { width: 150, height })
       }
     }
   }
 
   return (
     <div className="w-full h-full flex flex-col">
-      <h2 className="text-2xl font-bold mb-6">Todo List</h2>
+      <h2 className="text-xl font-bold mb-4">Todo List</h2>
 
       {/* Active Task Indicator */}
       {activeTaskId && (
