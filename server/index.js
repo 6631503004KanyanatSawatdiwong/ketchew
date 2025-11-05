@@ -32,15 +32,22 @@ app.use(limiter)
 
 app.use(express.json({ limit: '10mb' }))
 
-// Socket.io configuration
+// Socket.io configuration with longer timeouts for stable collaboration
 const io = new Server(server, {
   cors: {
     origin: process.env.CLIENT_URL || 'http://localhost:3000',
     methods: ['GET', 'POST'],
     credentials: true,
   },
-  pingTimeout: 60000,
-  pingInterval: 25000,
+  // Much longer timeouts to prevent premature disconnections
+  pingTimeout: 300000, // 5 minutes (was 60 seconds)
+  pingInterval: 120000, // 2 minutes (was 25 seconds)
+  // Allow more time for connection upgrades
+  upgradeTimeout: 30000,
+  // Keep connections alive longer
+  maxHttpBufferSize: 1e6,
+  // Reconnection settings
+  allowEIO3: true,
 })
 
 // In-memory storage for sessions
@@ -173,10 +180,10 @@ class SessionManager {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
   }
 
-  // Cleanup old sessions (run periodically)
+  // Cleanup old sessions (run periodically) - but be more conservative
   cleanupInactiveSessions() {
     const now = new Date()
-    const maxInactiveTime = 24 * 60 * 60 * 1000 // 24 hours
+    const maxInactiveTime = 7 * 24 * 60 * 60 * 1000 // 7 days (was 24 hours)
 
     for (const [sessionId, session] of this.sessions.entries()) {
       if (now - session.lastActivity > maxInactiveTime) {
@@ -196,6 +203,21 @@ const sessionManager = new SessionManager()
 // Socket.io connection handling
 io.on('connection', socket => {
   console.log(`User connected: ${socket.id}`)
+
+  // Set up heartbeat to keep connection alive
+  const heartbeatInterval = setInterval(() => {
+    socket.emit('heartbeat', { timestamp: Date.now() })
+  }, 30000) // Send heartbeat every 30 seconds
+
+  // Clean up heartbeat on disconnect
+  socket.on('disconnect', () => {
+    clearInterval(heartbeatInterval)
+  })
+
+  // Respond to heartbeat pong
+  socket.on('heartbeat-pong', () => {
+    // Just acknowledge - keeps connection active
+  })
 
   // Create a new session
   socket.on('create-session', (hostData, callback) => {
@@ -217,6 +239,63 @@ io.on('connection', socket => {
       console.log(`Session created: ${session.id} by ${socket.id}`)
     } catch (error) {
       callback({ success: false, error: error.message })
+    }
+  })
+
+  // Rejoin session after reconnection
+  socket.on('rejoin-session', data => {
+    try {
+      const { sessionId, nickname, avatar } = data
+      const session = sessionManager.getSession(sessionId)
+
+      if (!session) {
+        socket.emit('rejoin-failed', { error: 'Session no longer exists' })
+        return
+      }
+
+      // Check if this user was already in the session
+      let existingParticipant = null
+      for (const [socketId, participant] of session.participants.entries()) {
+        if (participant.nickname === nickname) {
+          existingParticipant = { socketId, participant }
+          break
+        }
+      }
+
+      if (existingParticipant) {
+        // Remove old socket reference and add new one
+        session.participants.delete(existingParticipant.socketId)
+        this.participants.delete(existingParticipant.socketId)
+
+        // Add with new socket ID
+        session.participants.set(socket.id, {
+          ...existingParticipant.participant,
+          avatar, // Allow avatar update on rejoin
+        })
+        this.participants.set(socket.id, {
+          sessionId,
+          isHost: existingParticipant.participant.isHost,
+        })
+
+        socket.join(sessionId)
+
+        // Update host reference if this was the host
+        if (existingParticipant.participant.isHost) {
+          session.hostId = socket.id
+        }
+
+        // Notify all participants about the rejoin
+        io.to(sessionId).emit('participant-rejoined', {
+          participant: session.participants.get(socket.id),
+          participants: Array.from(session.participants.values()),
+        })
+
+        console.log(`User ${nickname} rejoined session ${sessionId}`)
+      } else {
+        socket.emit('rejoin-failed', { error: 'You were not in this session' })
+      }
+    } catch (error) {
+      socket.emit('rejoin-failed', { error: error.message })
     }
   })
 
@@ -367,12 +446,12 @@ app.get('/health', (req, res) => {
   })
 })
 
-// Session cleanup interval (every hour)
+// Session cleanup interval (every 6 hours instead of every hour)
 setInterval(
   () => {
     sessionManager.cleanupInactiveSessions()
   },
-  60 * 60 * 1000
+  6 * 60 * 60 * 1000 // 6 hours
 )
 
 const PORT = process.env.PORT || 3004

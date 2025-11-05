@@ -123,29 +123,75 @@ export const useCollaborationStore = create<CollaborationStore>()(
     inviteLinkModalOpen: false,
     avatarSelectorOpen: false,
 
-    // Connection management
+    // Connection management with improved stability
     connect: () => {
       const socket = io('http://localhost:3004', {
         autoConnect: true,
         reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionAttempts: 5,
-        timeout: 10000,
+        reconnectionDelay: 2000, // Start with 2 seconds
+        reconnectionDelayMax: 10000, // Max 10 seconds between attempts
+        reconnectionAttempts: 10, // More attempts (was 5)
+        timeout: 30000, // Longer initial connection timeout (was 10 seconds)
+        // Keep connection alive settings
+        forceNew: false,
+        // Transport settings for stability
+        transports: ['websocket', 'polling'],
       })
 
       socket.on('connect', () => {
         console.log('Connected to collaboration server')
         set({ isConnected: true, connectionError: null })
+
+        // If we were in a session and got reconnected, try to rejoin
+        const state = get()
+        if (state.currentSession && state.userNickname) {
+          console.log('🔄 Attempting to rejoin session after reconnection...')
+          // Small delay to ensure server is ready
+          setTimeout(() => {
+            socket.emit('rejoin-session', {
+              sessionId: state.currentSession?.id,
+              nickname: state.userNickname,
+              avatar: state.userAvatar,
+            })
+          }, 1000)
+        }
       })
 
       socket.on('disconnect', reason => {
         console.log('Disconnected from server:', reason)
         set({ isConnected: false })
 
+        // Don't clear session data on temporary disconnects
         if (reason === 'io server disconnect') {
-          // Server initiated disconnect, don't reconnect automatically
+          // Server initiated disconnect, this might be permanent
           set({ connectionError: 'Disconnected by server' })
+        } else {
+          // Client-side disconnect or network issue, try to reconnect
+          set({ connectionError: 'Connection lost, attempting to reconnect...' })
         }
+      })
+
+      socket.on('reconnect', attemptNumber => {
+        console.log('🟢 Reconnected to server after', attemptNumber, 'attempts')
+        set({ isConnected: true, connectionError: null })
+      })
+
+      socket.on('reconnect_attempt', attemptNumber => {
+        console.log('🔄 Reconnection attempt', attemptNumber)
+        set({ connectionError: `Reconnecting... (attempt ${attemptNumber})` })
+      })
+
+      socket.on('reconnect_failed', () => {
+        console.log('❌ Failed to reconnect to server')
+        set({
+          connectionError: 'Failed to reconnect. Please refresh the page.',
+          isConnected: false,
+        })
+      })
+
+      // Heartbeat to keep connection alive
+      socket.on('heartbeat', () => {
+        socket.emit('heartbeat-pong')
       })
 
       socket.on('connect_error', error => {
