@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { SOUND_LIBRARY } from '../data/soundLibrary'
 import { SoundOption } from '../types'
+import { getAudioGenerator, AudioGenerator } from '../utils/AudioGenerator'
 
 const SoundSelector: React.FC = () => {
   const [selectedSound, setSelectedSound] = useState<string | null>(null)
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null)
   const [loadingSound, setLoadingSound] = useState<string | null>(null)
   const [failedSounds, setFailedSounds] = useState<Set<string>>(new Set())
+  const [audioGenerator, setAudioGenerator] = useState<AudioGenerator | null>(null)
 
   // Cleanup audio when component unmounts
   useEffect(() => {
@@ -15,8 +17,11 @@ const SoundSelector: React.FC = () => {
         currentAudio.pause()
         currentAudio.src = ''
       }
+      if (audioGenerator) {
+        audioGenerator.stop()
+      }
     }
-  }, [currentAudio])
+  }, [currentAudio, audioGenerator])
 
   const getSoundIcon = (sound: SoundOption) => {
     if (sound.id === 'rain') return '🌧️'
@@ -33,6 +38,10 @@ const SoundSelector: React.FC = () => {
       currentAudio.currentTime = 0
       setCurrentAudio(null)
     }
+    if (audioGenerator) {
+      audioGenerator.stop()
+      setAudioGenerator(null)
+    }
 
     // If clicking the same sound that's already selected, just turn it off
     if (selectedSound === soundId) {
@@ -47,35 +56,59 @@ const SoundSelector: React.FC = () => {
     setLoadingSound(soundId)
 
     try {
-      const audio = new Audio(sound.url)
-      audio.loop = true
-      audio.volume = 0.3
-      audio.crossOrigin = 'anonymous'
+      // Check if this is a generated sound
+      if (sound.url.startsWith('GENERATED:')) {
+        const soundType = sound.url.replace('GENERATED:', '')
+        console.log('Trying to generate sound:', sound.name, soundType)
+        const generator = getAudioGenerator()
 
-      // Set up event listeners
-      const onCanPlay = () => {
-        setLoadingSound(null)
-        setSelectedSound(soundId)
-        setCurrentAudio(audio)
-        audio.removeEventListener('canplaythrough', onCanPlay)
-        audio.removeEventListener('error', onError)
+        try {
+          const result = await generator.generateSound(soundType)
+          if (result) {
+            setLoadingSound(null)
+            setSelectedSound(soundId)
+            setAudioGenerator(generator)
+            console.log('Generated sound successfully:', sound.name)
+          } else {
+            throw new Error('Generator returned null')
+          }
+        } catch (error) {
+          console.error('Generated sound failed:', sound.name, error)
+          setLoadingSound(null)
+          setFailedSounds(prev => new Set([...prev, soundId]))
+        }
+      } else {
+        // Handle regular audio URLs
+        const audio = new Audio(sound.url)
+        audio.loop = true
+        audio.volume = 0.3
+        audio.crossOrigin = 'anonymous'
+
+        // Set up event listeners
+        const onCanPlay = () => {
+          setLoadingSound(null)
+          setSelectedSound(soundId)
+          setCurrentAudio(audio)
+          audio.removeEventListener('canplaythrough', onCanPlay)
+          audio.removeEventListener('error', onError)
+        }
+
+        const onError = (e: Event) => {
+          console.error('Audio failed to load:', sound.name, e)
+          console.error('Failed URL:', sound.url)
+
+          setLoadingSound(null)
+          setFailedSounds(prev => new Set([...prev, soundId]))
+          audio.removeEventListener('canplaythrough', onCanPlay)
+          audio.removeEventListener('error', onError)
+        }
+
+        audio.addEventListener('canplaythrough', onCanPlay)
+        audio.addEventListener('error', onError)
+
+        // Try to play
+        await audio.play()
       }
-
-      const onError = (e: Event) => {
-        console.error('Audio failed to load:', sound.name, e)
-        console.error('Failed URL:', sound.url)
-
-        setLoadingSound(null)
-        setFailedSounds(prev => new Set([...prev, soundId]))
-        audio.removeEventListener('canplaythrough', onCanPlay)
-        audio.removeEventListener('error', onError)
-      }
-
-      audio.addEventListener('canplaythrough', onCanPlay)
-      audio.addEventListener('error', onError)
-
-      // Try to play
-      await audio.play()
     } catch (error) {
       console.error('Audio playback failed:', sound.name, error)
       setLoadingSound(null)
@@ -84,7 +117,7 @@ const SoundSelector: React.FC = () => {
   }
 
   // Simple test beep function
-  const playTestBeep = () => {
+  const playTestBeep = async () => {
     // Stop any current sound first
     if (currentAudio) {
       currentAudio.pause()
@@ -92,26 +125,17 @@ const SoundSelector: React.FC = () => {
       setCurrentAudio(null)
       setSelectedSound(null)
     }
+    if (audioGenerator) {
+      audioGenerator.stop()
+      setAudioGenerator(null)
+    }
 
-    // Create a simple beep using Web Audio API
-    const AudioContextClass =
-      window.AudioContext ||
-      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
-    const audioContext = new AudioContextClass()
-    const oscillator = audioContext.createOscillator()
-    const gainNode = audioContext.createGain()
-
-    oscillator.connect(gainNode)
-    gainNode.connect(audioContext.destination)
-
-    oscillator.frequency.setValueAtTime(800, audioContext.currentTime)
-    oscillator.type = 'sine'
-
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5)
-
-    oscillator.start(audioContext.currentTime)
-    oscillator.stop(audioContext.currentTime + 0.5)
+    try {
+      const generator = getAudioGenerator()
+      await generator.generateSound('beep')
+    } catch (error) {
+      console.error('Test beep failed:', error)
+    }
   }
 
   return (
