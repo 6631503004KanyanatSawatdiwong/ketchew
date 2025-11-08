@@ -1,9 +1,11 @@
 import { SoundOption } from '../types'
 
 export const SOUND_LIBRARY: SoundOption[] = [
+  // Nature sounds - Using reliable CORS-friendly sources
+
   {
     id: 'ocean',
-    name: ' Ocean',
+    name: '🌊 Ocean',
     category: 'nature',
     url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
     description: 'Peaceful ocean waves on the shore',

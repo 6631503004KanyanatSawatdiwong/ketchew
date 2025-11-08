@@ -27,22 +27,30 @@ const SoundSelector: React.FC = () => {
   }
 
   const handleSoundToggle = async (soundId: string) => {
+    console.log('🔊 Sound toggle clicked:', soundId)
+
     // Always stop current audio first
     if (audioGenerator) {
+      console.log('🔇 Stopping current audio')
       audioGenerator.stop()
       setAudioGenerator(null)
     }
 
     // If clicking the same sound that's already selected, just turn it off
     if (selectedSound === soundId) {
+      console.log('🔄 Turning off current sound')
       setSelectedSound(null)
       return
     }
 
     // Otherwise, start the new sound
     const sound = SOUND_LIBRARY.find(s => s.id === soundId)
-    if (!sound) return
+    if (!sound) {
+      console.error('❌ Sound not found:', soundId)
+      return
+    }
 
+    console.log('▶️ Starting new sound:', sound.name, sound.url)
     setLoadingSound(soundId)
 
     try {
@@ -69,6 +77,8 @@ const SoundSelector: React.FC = () => {
 
   // Simple test beep function
   const playTestBeep = async () => {
+    console.log('🧪 Testing audio...')
+
     // Stop any current sound first
     if (audioGenerator) {
       audioGenerator.stop()
@@ -78,13 +88,15 @@ const SoundSelector: React.FC = () => {
 
     try {
       const generator = getAudioGenerator()
-      // Use the embedded test beep from the sound library
-      const testSound = SOUND_LIBRARY.find(s => s.id === 'test-beep')
-      if (testSound) {
-        await generator.playSound(testSound.url)
-      }
+      // Use embedded test beep (not from sound library)
+      const testBeepUrl =
+        'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt555NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBz'
+
+      console.log('🔊 Playing test beep (embedded audio)...')
+      const result = await generator.playSound(testBeepUrl)
+      console.log('🔊 Test beep result:', result)
     } catch (error) {
-      console.error('Test beep failed:', error)
+      console.error('❌ Test beep failed:', error)
     }
   }
 

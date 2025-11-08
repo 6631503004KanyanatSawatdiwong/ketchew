@@ -1,34 +1,14 @@
 import { SoundOption } from '../types'
 
 export const SOUND_LIBRARY: SoundOption[] = [
-  // High-quality ambient sounds from reliable sources
-  {
-    id: 'rain',
-    name: '🌧️ Rain',
-    category: 'nature',
-    url: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_d1358e7c8a.mp3',
-    description: 'Soothing rain sounds for focus and relaxation',
-  },
-  {
-    id: 'stream',
-    name: '🏞️ Stream',
-    category: 'nature',
-    url: 'https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3',
-    description: 'Gentle babbling brook sounds',
-  },
+  // Nature sounds - Using Pixabay for reliable, fast loading
+
   {
     id: 'ocean',
     name: '🌊 Ocean',
     category: 'nature',
-    url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_c0f69ab57c.mp3',
+    url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
     description: 'Peaceful ocean waves on the shore',
-  },
-  {
-    id: 'forest',
-    name: '🌲 Forest',
-    category: 'nature',
-    url: 'https://cdn.pixabay.com/download/audio/2022/11/22/audio_f4a5c56ba8.mp3',
-    description: 'Calming forest ambiance with birds and wind',
   },
 ]
 

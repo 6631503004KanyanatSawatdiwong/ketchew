@@ -17,34 +17,50 @@ export class AudioGenerator {
       // Stop any existing sounds
       this.stop()
 
-      console.log('Loading sound with Howler.js:', url)
+      console.log('🎵 AudioGenerator: Loading sound with Howler.js:', url.substring(0, 100) + '...')
 
       return new Promise(resolve => {
+        // Set a timeout for loading
+        const loadTimeout = setTimeout(() => {
+          console.error('❌ AudioGenerator: Load timeout after 10 seconds')
+          if (this.currentHowl) {
+            this.currentHowl.unload()
+            this.currentHowl = null
+          }
+          resolve(false)
+        }, 10000) // 10 second timeout
+
         this.currentHowl = new Howl({
           src: [url],
           loop: true,
           volume: 0.3,
           autoplay: false,
-          html5: false, // Use Web Audio API when possible for better performance
+          html5: true, // Try HTML5 audio first for faster loading
           preload: true,
           onload: () => {
-            console.log('Sound loaded successfully:', url)
+            clearTimeout(loadTimeout)
+            console.log('✅ AudioGenerator: Sound loaded successfully')
             if (this.currentHowl) {
               this.currentHowl.play()
               resolve(true)
             } else {
+              console.error('❌ AudioGenerator: Howl instance lost after load')
               resolve(false)
             }
           },
           onloaderror: (id, error) => {
-            console.error('Howler.js failed to load:', url, error)
+            clearTimeout(loadTimeout)
+            console.error('❌ AudioGenerator: Failed to load audio:', error)
             resolve(false)
           },
           onplayerror: (id, error) => {
-            console.error('Howler.js failed to play:', url, error)
+            clearTimeout(loadTimeout)
+            console.error('❌ AudioGenerator: Failed to play audio:', error)
             // Try to unlock audio context and play again
             if (this.currentHowl) {
+              console.log('🔄 AudioGenerator: Attempting to unlock audio context...')
               this.currentHowl.once('unlock', () => {
+                console.log('🔓 AudioGenerator: Audio context unlocked, retrying play...')
                 if (this.currentHowl) {
                   this.currentHowl.play()
                 }
@@ -55,7 +71,7 @@ export class AudioGenerator {
         })
       })
     } catch (error) {
-      console.error('Error playing sound:', error)
+      console.error('❌ AudioGenerator: Exception in playSound:', error)
       return false
     }
   }
