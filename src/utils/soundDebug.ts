@@ -6,54 +6,57 @@
 import { getAudioGenerator } from './AudioGenerator'
 
 // Make it available globally for debugging
-;(window as unknown as { testSound: (soundType: string) => Promise<void> }).testSound = async (
-  soundType: string
+;(window as unknown as { testSound: (soundUrl: string) => Promise<void> }).testSound = async (
+  soundUrl: string
 ) => {
-  console.log('Testing sound:', soundType)
+  console.log('Testing sound:', soundUrl)
   const generator = getAudioGenerator()
   try {
-    const result = await generator.generateSound(soundType)
+    const result = await generator.playSound(soundUrl)
     if (result) {
-      console.log('Sound generated successfully!')
+      console.log('Sound played successfully!')
     } else {
-      console.log('Sound generation returned null')
+      console.log('Sound playback failed')
     }
   } catch (error) {
-    console.error('Sound generation failed:', error)
+    console.error('Sound playback failed:', error)
   }
 }
 
 // Test all sound types
 ;(window as unknown as { testAllSounds: () => Promise<void> }).testAllSounds = async () => {
-  const soundTypes = [
-    'rain',
-    'stream',
-    'ocean',
-    'forest',
-    'whitenoise',
-    'brownnoise',
-    'pinknoise',
-    'beep',
-    'bell',
-    'chime',
-    'binaural-alpha',
-    'binaural-theta',
+  const soundUrls = [
+    'GENERATED:rain',
+    'GENERATED:stream',
+    'GENERATED:ocean',
+    'GENERATED:forest',
+    'GENERATED:whitenoise',
+    'GENERATED:brownnoise',
+    'GENERATED:pinknoise',
+    'GENERATED:beep',
+    'GENERATED:bell',
+    'GENERATED:chime',
+    'GENERATED:binaural-alpha',
+    'GENERATED:binaural-theta',
+    'https://www.soundjay.com/misc/sounds/rain-01.wav',
+    'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
   ]
 
-  for (const soundType of soundTypes) {
-    console.log('Testing:', soundType)
-    await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second between tests
+  for (const soundUrl of soundUrls) {
+    console.log('Testing:', soundUrl)
+    await new Promise(resolve => setTimeout(resolve, 1500)) // Wait 1.5 seconds between tests
     try {
       const generator = getAudioGenerator()
-      const result = await generator.generateSound(soundType)
-      console.log(soundType, result ? '✅' : '❌')
+      const result = await generator.playSound(soundUrl)
+      console.log(soundUrl, result ? '✅' : '❌')
       generator.stop() // Stop after testing
     } catch (error) {
-      console.log(soundType, '❌', error.message)
+      console.log(soundUrl, '❌', (error as Error).message)
     }
   }
 }
 
 console.log('Sound debug utilities loaded!')
-console.log('Use testSound("rain") to test a specific sound')
+console.log('Use testSound("GENERATED:rain") to test a generated sound')
+console.log('Use testSound("https://example.com/sound.mp3") to test an external sound')
 console.log('Use testAllSounds() to test all sounds')

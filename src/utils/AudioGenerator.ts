@@ -1,12 +1,16 @@
 /**
- * AudioGenerator - Utility for generating ambient sounds using Web Audio API
+ * AudioGenerator - Utility for generating ambient sounds using Web Audio API and Howler.js
  * This provides a fallback for when external sound URLs fail due to CORS or availability issues
+ * Uses Howler.js for external audio files and Web Audio API for generated sounds
  */
+
+import { Howl } from 'howler'
 
 export class AudioGenerator {
   private audioContext: AudioContext | null = null
   private currentSources: AudioNode[] = []
   private gainNode: GainNode | null = null
+  private currentHowl: Howl | null = null
 
   constructor() {
     this.initializeAudioContext()
@@ -42,6 +46,48 @@ export class AudioGenerator {
     return this.audioContext
   }
 
+  async playSound(url: string): Promise<boolean> {
+    try {
+      // Stop any existing sounds
+      this.stop()
+
+      // Check if this is a generated sound
+      if (url.startsWith('GENERATED:')) {
+        const soundType = url.replace('GENERATED:', '')
+        const result = await this.generateSound(soundType)
+        return result !== null
+      }
+
+      // Handle external URLs with Howler.js
+      return new Promise(resolve => {
+        console.log('Loading sound with Howler.js:', url)
+
+        this.currentHowl = new Howl({
+          src: [url],
+          loop: true,
+          volume: 0.3,
+          autoplay: false,
+          onload: () => {
+            console.log('Sound loaded successfully')
+            this.currentHowl?.play()
+            resolve(true)
+          },
+          onloaderror: (id, error) => {
+            console.error('Howler.js failed to load:', error)
+            resolve(false)
+          },
+          onplayerror: (id, error) => {
+            console.error('Howler.js failed to play:', error)
+            resolve(false)
+          },
+        })
+      })
+    } catch (error) {
+      console.error('Error playing sound:', error)
+      return false
+    }
+  }
+
   async generateSound(type: string): Promise<AudioNode | null> {
     try {
       const context = await this.ensureAudioContext()
@@ -49,9 +95,6 @@ export class AudioGenerator {
         console.warn('No audio context available')
         return null
       }
-
-      // Stop any existing sounds
-      this.stop()
 
       // Create main gain node for volume control
       this.gainNode = context.createGain()
@@ -403,15 +446,21 @@ export class AudioGenerator {
   }
 
   setVolume(volume: number) {
+    const normalizedVolume = Math.max(0, Math.min(1, volume))
+
+    // Set volume for Web Audio API generated sounds
     if (this.gainNode) {
-      this.gainNode.gain.setValueAtTime(
-        Math.max(0, Math.min(1, volume)),
-        this.audioContext!.currentTime
-      )
+      this.gainNode.gain.setValueAtTime(normalizedVolume, this.audioContext!.currentTime)
+    }
+
+    // Set volume for Howler.js sounds
+    if (this.currentHowl) {
+      this.currentHowl.volume(normalizedVolume)
     }
   }
 
   stop() {
+    // Stop Web Audio API generated sounds
     this.currentSources.forEach(source => {
       try {
         if ('stop' in source) {
@@ -422,6 +471,13 @@ export class AudioGenerator {
       }
     })
     this.currentSources = []
+
+    // Stop Howler.js sounds
+    if (this.currentHowl) {
+      this.currentHowl.stop()
+      this.currentHowl.unload()
+      this.currentHowl = null
+    }
   }
 
   destroy() {

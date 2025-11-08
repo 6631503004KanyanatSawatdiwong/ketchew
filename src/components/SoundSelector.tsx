@@ -5,7 +5,6 @@ import { getAudioGenerator, AudioGenerator } from '../utils/AudioGenerator'
 
 const SoundSelector: React.FC = () => {
   const [selectedSound, setSelectedSound] = useState<string | null>(null)
-  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null)
   const [loadingSound, setLoadingSound] = useState<string | null>(null)
   const [failedSounds, setFailedSounds] = useState<Set<string>>(new Set())
   const [audioGenerator, setAudioGenerator] = useState<AudioGenerator | null>(null)
@@ -13,15 +12,11 @@ const SoundSelector: React.FC = () => {
   // Cleanup audio when component unmounts
   useEffect(() => {
     return () => {
-      if (currentAudio) {
-        currentAudio.pause()
-        currentAudio.src = ''
-      }
       if (audioGenerator) {
         audioGenerator.stop()
       }
     }
-  }, [currentAudio, audioGenerator])
+  }, [audioGenerator])
 
   const getSoundIcon = (sound: SoundOption) => {
     if (sound.id === 'rain') return '🌧️'
@@ -33,11 +28,6 @@ const SoundSelector: React.FC = () => {
 
   const handleSoundToggle = async (soundId: string) => {
     // Always stop current audio first
-    if (currentAudio) {
-      currentAudio.pause()
-      currentAudio.currentTime = 0
-      setCurrentAudio(null)
-    }
     if (audioGenerator) {
       audioGenerator.stop()
       setAudioGenerator(null)
@@ -56,58 +46,19 @@ const SoundSelector: React.FC = () => {
     setLoadingSound(soundId)
 
     try {
-      // Check if this is a generated sound
-      if (sound.url.startsWith('GENERATED:')) {
-        const soundType = sound.url.replace('GENERATED:', '')
-        console.log('Trying to generate sound:', sound.name, soundType)
-        const generator = getAudioGenerator()
+      console.log('Trying to play sound:', sound.name, sound.url)
+      const generator = getAudioGenerator()
 
-        try {
-          const result = await generator.generateSound(soundType)
-          if (result) {
-            setLoadingSound(null)
-            setSelectedSound(soundId)
-            setAudioGenerator(generator)
-            console.log('Generated sound successfully:', sound.name)
-          } else {
-            throw new Error('Generator returned null')
-          }
-        } catch (error) {
-          console.error('Generated sound failed:', sound.name, error)
-          setLoadingSound(null)
-          setFailedSounds(prev => new Set([...prev, soundId]))
-        }
+      const result = await generator.playSound(sound.url)
+      if (result) {
+        setLoadingSound(null)
+        setSelectedSound(soundId)
+        setAudioGenerator(generator)
+        console.log('Sound played successfully:', sound.name)
       } else {
-        // Handle regular audio URLs
-        const audio = new Audio(sound.url)
-        audio.loop = true
-        audio.volume = 0.3
-        audio.crossOrigin = 'anonymous'
-
-        // Set up event listeners
-        const onCanPlay = () => {
-          setLoadingSound(null)
-          setSelectedSound(soundId)
-          setCurrentAudio(audio)
-          audio.removeEventListener('canplaythrough', onCanPlay)
-          audio.removeEventListener('error', onError)
-        }
-
-        const onError = (e: Event) => {
-          console.error('Audio failed to load:', sound.name, e)
-          console.error('Failed URL:', sound.url)
-
-          setLoadingSound(null)
-          setFailedSounds(prev => new Set([...prev, soundId]))
-          audio.removeEventListener('canplaythrough', onCanPlay)
-          audio.removeEventListener('error', onError)
-        }
-
-        audio.addEventListener('canplaythrough', onCanPlay)
-        audio.addEventListener('error', onError)
-
-        // Try to play
-        await audio.play()
+        console.error('Sound failed to play:', sound.name)
+        setLoadingSound(null)
+        setFailedSounds(prev => new Set([...prev, soundId]))
       }
     } catch (error) {
       console.error('Audio playback failed:', sound.name, error)
@@ -119,20 +70,15 @@ const SoundSelector: React.FC = () => {
   // Simple test beep function
   const playTestBeep = async () => {
     // Stop any current sound first
-    if (currentAudio) {
-      currentAudio.pause()
-      currentAudio.currentTime = 0
-      setCurrentAudio(null)
-      setSelectedSound(null)
-    }
     if (audioGenerator) {
       audioGenerator.stop()
       setAudioGenerator(null)
     }
+    setSelectedSound(null)
 
     try {
       const generator = getAudioGenerator()
-      await generator.generateSound('beep')
+      await generator.playSound('GENERATED:beep')
     } catch (error) {
       console.error('Test beep failed:', error)
     }

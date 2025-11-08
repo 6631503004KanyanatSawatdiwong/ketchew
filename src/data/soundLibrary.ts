@@ -99,6 +99,22 @@ export const SOUND_LIBRARY: SoundOption[] = [
     url: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt555NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBz',
     description: 'Gentle bell chime (embedded audio)',
   },
+
+  // External sounds using Howler.js (these work reliably with CORS)
+  {
+    id: 'rain-external',
+    name: '🌧️ Rain (External)',
+    category: 'nature',
+    url: 'https://www.soundjay.com/misc/sounds/rain-01.wav',
+    description: 'Real rain recording from external source',
+  },
+  {
+    id: 'ocean-external',
+    name: '🌊 Ocean (External)',
+    category: 'nature',
+    url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
+    description: 'Ocean waves recording',
+  },
 ]
 
 export const getSoundById = (id: string): SoundOption | undefined => {
