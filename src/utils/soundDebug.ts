@@ -26,25 +26,20 @@ import { getAudioGenerator } from './AudioGenerator'
 // Test all sound types
 ;(window as unknown as { testAllSounds: () => Promise<void> }).testAllSounds = async () => {
   const soundUrls = [
-    'GENERATED:rain',
-    'GENERATED:stream',
-    'GENERATED:ocean',
-    'GENERATED:forest',
-    'GENERATED:whitenoise',
-    'GENERATED:brownnoise',
-    'GENERATED:pinknoise',
-    'GENERATED:beep',
-    'GENERATED:bell',
-    'GENERATED:chime',
-    'GENERATED:binaural-alpha',
-    'GENERATED:binaural-theta',
     'https://www.soundjay.com/misc/sounds/rain-01.wav',
+    'https://www.soundjay.com/weather/sounds/rain-02.wav',
+    'https://www.soundjay.com/nature/sounds/stream-01.wav',
     'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
+    'https://www.soundjay.com/nature/sounds/forest-01.wav',
+    'https://www.soundjay.com/nature/sounds/wind-01.wav',
+    'https://www.soundjay.com/misc/sounds/white-noise-01.wav',
+    'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+    'https://www.soundjay.com/misc/sounds/chime-01.wav',
   ]
 
   for (const soundUrl of soundUrls) {
     console.log('Testing:', soundUrl)
-    await new Promise(resolve => setTimeout(resolve, 1500)) // Wait 1.5 seconds between tests
+    await new Promise(resolve => setTimeout(resolve, 2000)) // Wait 2 seconds between tests
     try {
       const generator = getAudioGenerator()
       const result = await generator.playSound(soundUrl)
@@ -57,6 +52,6 @@ import { getAudioGenerator } from './AudioGenerator'
 }
 
 console.log('Sound debug utilities loaded!')
-console.log('Use testSound("GENERATED:rain") to test a generated sound')
 console.log('Use testSound("https://example.com/sound.mp3") to test an external sound')
-console.log('Use testAllSounds() to test all sounds')
+console.log('Use testAllSounds() to test all sounds from the library')
+console.log('All sounds now use Howler.js for better compatibility!')

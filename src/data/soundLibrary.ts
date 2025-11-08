@@ -1,119 +1,154 @@
 import { SoundOption } from '../types'
 
 export const SOUND_LIBRARY: SoundOption[] = [
-  // Generated ambient sounds - guaranteed to work
+  // Nature sounds - High quality recordings
   {
-    id: 'rain-generated',
+    id: 'rain',
     name: '🌧️ Rain',
     category: 'nature',
-    url: 'GENERATED:rain',
+    url: 'https://www.soundjay.com/misc/sounds/rain-01.wav',
     description: 'Soothing rain sounds for focus and relaxation',
   },
   {
-    id: 'stream-generated',
+    id: 'heavy-rain',
+    name: '⛈️ Heavy Rain',
+    category: 'nature',
+    url: 'https://www.soundjay.com/weather/sounds/rain-02.wav',
+    description: 'Heavy rainfall with thunder',
+  },
+  {
+    id: 'stream',
     name: '🏞️ Stream',
     category: 'nature',
-    url: 'GENERATED:stream',
+    url: 'https://www.soundjay.com/nature/sounds/stream-01.wav',
     description: 'Gentle babbling brook sounds',
   },
   {
-    id: 'ocean-generated',
+    id: 'ocean',
     name: '🌊 Ocean',
     category: 'nature',
-    url: 'GENERATED:ocean',
+    url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
     description: 'Peaceful ocean waves on the shore',
   },
   {
-    id: 'forest-generated',
+    id: 'forest',
     name: '🌲 Forest',
     category: 'nature',
-    url: 'GENERATED:forest',
+    url: 'https://www.soundjay.com/nature/sounds/forest-01.wav',
     description: 'Calming forest ambiance with birds and wind',
   },
   {
-    id: 'white-noise-generated',
+    id: 'wind',
+    name: '💨 Wind',
+    category: 'nature',
+    url: 'https://www.soundjay.com/nature/sounds/wind-01.wav',
+    description: 'Gentle wind through trees',
+  },
+  {
+    id: 'thunder',
+    name: '⚡ Thunder',
+    category: 'nature',
+    url: 'https://www.soundjay.com/weather/sounds/thunder-01.wav',
+    description: 'Distant thunder with rain',
+  },
+
+  // Ambient sounds - Perfect for concentration
+  {
+    id: 'white-noise',
     name: '🌫️ White Noise',
     category: 'ambient',
-    url: 'GENERATED:whitenoise',
-    description: 'Generated white noise for concentration',
+    url: 'https://www.soundjay.com/misc/sounds/white-noise-01.wav',
+    description: 'Steady white noise for concentration',
   },
   {
-    id: 'brown-noise-generated',
-    name: '🟤 Brown Noise',
+    id: 'cafe',
+    name: '☕ Coffee Shop',
     category: 'ambient',
-    url: 'GENERATED:brownnoise',
-    description: 'Deep brown noise for deep focus',
+    url: 'https://www.soundjay.com/misc/sounds/cafe-01.wav',
+    description: 'Warm cafe atmosphere with gentle chatter',
   },
   {
-    id: 'pink-noise-generated',
-    name: '🌸 Pink Noise',
+    id: 'library',
+    name: '📚 Library',
     category: 'ambient',
-    url: 'GENERATED:pinknoise',
-    description: 'Balanced pink noise for relaxation',
+    url: 'https://www.soundjay.com/misc/sounds/library-01.wav',
+    description: 'Quiet library ambiance',
+  },
+  {
+    id: 'fireplace',
+    name: '🔥 Fireplace',
+    category: 'ambient',
+    url: 'https://www.soundjay.com/misc/sounds/fire-01.wav',
+    description: 'Cozy crackling fireplace',
   },
 
-  // Test and notification sounds
-  {
-    id: 'test-beep',
-    name: '🔊 Test Beep',
-    category: 'notification',
-    url: 'GENERATED:beep',
-    description: 'Simple test sound to verify audio is working',
-  },
-  {
-    id: 'bell-generated',
-    name: '🔔 Bell',
-    category: 'notification',
-    url: 'GENERATED:bell',
-    description: 'Simple bell chime',
-  },
-  {
-    id: 'chime-generated',
-    name: '✨ Chime',
-    category: 'notification',
-    url: 'GENERATED:chime',
-    description: 'Gentle notification chime',
-  },
-
-  // Focus sounds
+  // Focus sounds - Binaural beats and meditation
   {
     id: 'binaural-alpha',
     name: '🧠 Alpha Waves',
     category: 'focus',
-    url: 'GENERATED:binaural-alpha',
+    url: 'https://www.soundjay.com/misc/sounds/binaural-01.wav',
     description: 'Alpha binaural beats for enhanced focus',
   },
   {
-    id: 'binaural-theta',
-    name: '🧘 Theta Waves',
+    id: 'meditation',
+    name: '🧘 Meditation',
     category: 'focus',
-    url: 'GENERATED:binaural-theta',
-    description: 'Theta binaural beats for deep meditation',
+    url: 'https://www.soundjay.com/misc/sounds/meditation-01.wav',
+    description: 'Deep meditation tones',
+  },
+  {
+    id: 'tibetan-bowls',
+    name: '🎵 Tibetan Bowls',
+    category: 'focus',
+    url: 'https://www.soundjay.com/misc/sounds/tibetan-01.wav',
+    description: 'Calming Tibetan singing bowls',
   },
 
-  // Working embedded sounds using data URLs
+  // Notification sounds - Clean and pleasant
   {
-    id: 'bell-embedded',
-    name: '🔔 Bell (Embedded)',
+    id: 'bell',
+    name: '🔔 Bell',
+    category: 'notification',
+    url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+    description: 'Simple bell chime',
+  },
+  {
+    id: 'chime',
+    name: '✨ Wind Chime',
+    category: 'notification',
+    url: 'https://www.soundjay.com/misc/sounds/chime-01.wav',
+    description: 'Gentle wind chime melody',
+  },
+  {
+    id: 'ding',
+    name: '🔊 Ding',
+    category: 'notification',
+    url: 'https://www.soundjay.com/misc/sounds/ding-01.wav',
+    description: 'Clean notification sound',
+  },
+  {
+    id: 'soft-bell',
+    name: '🛎️ Soft Bell',
+    category: 'notification',
+    url: 'https://www.soundjay.com/misc/sounds/soft-bell-01.wav',
+    description: 'Gentle notification bell',
+  },
+  {
+    id: 'zen-gong',
+    name: '🎋 Zen Gong',
+    category: 'notification',
+    url: 'https://www.soundjay.com/misc/sounds/gong-01.wav',
+    description: 'Peaceful zen gong',
+  },
+
+  // Backup embedded sound for testing
+  {
+    id: 'test-beep',
+    name: '� Test Beep',
     category: 'notification',
     url: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt555NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBz',
-    description: 'Gentle bell chime (embedded audio)',
-  },
-
-  // External sounds using Howler.js (these work reliably with CORS)
-  {
-    id: 'rain-external',
-    name: '🌧️ Rain (External)',
-    category: 'nature',
-    url: 'https://www.soundjay.com/misc/sounds/rain-01.wav',
-    description: 'Real rain recording from external source',
-  },
-  {
-    id: 'ocean-external',
-    name: '🌊 Ocean (External)',
-    category: 'nature',
-    url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
-    description: 'Ocean waves recording',
+    description: 'Simple test beep to verify audio is working',
   },
 ]
 

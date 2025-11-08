@@ -78,7 +78,11 @@ const SoundSelector: React.FC = () => {
 
     try {
       const generator = getAudioGenerator()
-      await generator.playSound('GENERATED:beep')
+      // Use the embedded test beep from the sound library
+      const testSound = SOUND_LIBRARY.find(s => s.id === 'test-beep')
+      if (testSound) {
+        await generator.playSound(testSound.url)
+      }
     } catch (error) {
       console.error('Test beep failed:', error)
     }
