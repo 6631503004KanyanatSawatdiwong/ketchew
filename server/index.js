@@ -10,7 +10,26 @@ const app = express()
 const server = createServer(app)
 
 // Security and performance middleware
-app.use(helmet())
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        imgSrc: [
+          "'self'",
+          'data:',
+          'https://images.unsplash.com',
+          'https://res.cloudinary.com',
+          'https://unsplash.com',
+        ],
+        scriptSrc: ["'self'"],
+        connectSrc: ["'self'", 'ws:', 'wss:'],
+      },
+    },
+  })
+)
 app.use(compression())
 app.use(
   cors({
