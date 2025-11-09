@@ -69,16 +69,14 @@ export const BACKGROUND_LIBRARY: BackgroundImage[] = [
     name: 'Rice Farms',
     category: 'nature',
     imageUrl: 'https://res.cloudinary.com/dggmdyxou/image/upload/v1762678376/Farm_dbnzvh.jpg',
-    artist: 'Zhan Feng',
-    source: 'Unsplash',
+    artist: 'Unknown',
+    source: 'pexels.com',
   },
   {
     id: 'navagio-beach',
     name: 'Navagio Beach',
     category: 'nature',
     imageUrl: 'https://res.cloudinary.com/dggmdyxou/image/upload/v1762678372/Greece_h8qclh.jpg',
-    artist: 'Jimmy Teoh',
-    source: 'Unsplash',
   },
 
   // Room/Minimalist Category (clean spaces)
@@ -88,16 +86,16 @@ export const BACKGROUND_LIBRARY: BackgroundImage[] = [
     category: 'room',
     imageUrl:
       'https://res.cloudinary.com/dggmdyxou/image/upload/v1762678380/BedroomWindow_mmbyf3.jpg',
-    artist: 'Spacejoy',
-    source: 'Unsplash',
+    artist: 'Unknown',
+    source: 'pexels.com',
   },
   {
     id: 'desktop',
-    name: 'Clean Workspace',
+    name: 'Desktop',
     category: 'room',
     imageUrl: 'https://res.cloudinary.com/dggmdyxou/image/upload/v1762678382/Desktop_nqcr7p.jpg',
-    artist: 'Spacejoy',
-    source: 'Unsplash',
+    artist: 'Unknown',
+    source: 'pexels.com',
   },
 
   // Cafe Category
@@ -106,16 +104,16 @@ export const BACKGROUND_LIBRARY: BackgroundImage[] = [
     name: 'Cozy Cafe',
     category: 'cafe',
     imageUrl: 'https://res.cloudinary.com/dggmdyxou/image/upload/v1762678379/CozyCafe_qnlcot.jpg',
-    artist: 'Nathan Dumlao',
-    source: 'Unsplash',
+    artist: 'Unknown',
+    source: 'pexels.com',
   },
   {
     id: 'warm-cafe',
     name: 'Warm Cafe',
     category: 'cafe',
     imageUrl: 'https://res.cloudinary.com/dggmdyxou/image/upload/v1762678377/Cafe2_mhk8we.jpg',
-    artist: 'Jonatan Pie',
-    source: 'Unsplash',
+    artist: 'Unknown',
+    source: 'pexels.com',
   },
   {
     id: 'coffee-notes',
