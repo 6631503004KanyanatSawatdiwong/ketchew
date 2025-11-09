@@ -34,9 +34,7 @@ const PomodoroTimer: React.FC = () => {
             className={`w-8 h-8 transition-all duration-300 ${
               completedRounds[round - 1]
                 ? 'opacity-100 filter-none' // Completed: full color (red)
-                : round === currentRound
-                  ? 'opacity-75 filter-none' // Current: slightly dimmed but colorful
-                  : 'opacity-30 grayscale' // Not started: grey and dimmed
+                : 'opacity-30 grayscale' // Not completed: grey and dimmed
             }`}
           >
             <img

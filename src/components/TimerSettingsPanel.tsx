@@ -19,28 +19,17 @@ const TimerSettingsPanel: React.FC<TimerSettingsProps> = ({ className = '', onCl
   const validateSettings = (newSettings: TimerSettings): Record<string, string> => {
     const validationErrors: Record<string, string> = {}
 
-    // Study duration validation (5-90 minutes)
-    if (newSettings.studyDuration < 5 || newSettings.studyDuration > 90) {
-      validationErrors.studyDuration = 'Study duration must be between 5-90 minutes'
+    // Basic validation - just ensure positive numbers
+    if (newSettings.studyDuration < 1) {
+      validationErrors.studyDuration = 'Study duration must be at least 1 minute'
     }
 
-    // Short break validation (1-30 minutes)
-    if (newSettings.shortBreakDuration < 1 || newSettings.shortBreakDuration > 30) {
-      validationErrors.shortBreakDuration = 'Short break must be between 1-30 minutes'
+    if (newSettings.shortBreakDuration < 1) {
+      validationErrors.shortBreakDuration = 'Short break must be at least 1 minute'
     }
 
-    // Long break validation (5-60 minutes)
-    if (newSettings.longBreakDuration < 5 || newSettings.longBreakDuration > 60) {
-      validationErrors.longBreakDuration = 'Long break must be between 5-60 minutes'
-    }
-
-    // Logical validation
-    if (newSettings.shortBreakDuration >= newSettings.studyDuration) {
-      validationErrors.shortBreakDuration = 'Short break should be shorter than study duration'
-    }
-
-    if (newSettings.longBreakDuration <= newSettings.shortBreakDuration) {
-      validationErrors.longBreakDuration = 'Long break should be longer than short break'
+    if (newSettings.longBreakDuration < 1) {
+      validationErrors.longBreakDuration = 'Long break must be at least 1 minute'
     }
 
     return validationErrors
@@ -75,14 +64,14 @@ const TimerSettingsPanel: React.FC<TimerSettingsProps> = ({ className = '', onCl
             <label className="block text-sm font-medium text-gray-700 mb-2">Pomodoro</label>
             <input
               type="number"
-              min="5"
-              max="90"
+              min="1"
               value={localSettings.studyDuration}
               onChange={e => handleSettingChange('studyDuration', parseInt(e.target.value) || 25)}
               className={`
                 w-full px-3 py-2 border rounded-lg text-center font-mono
                 ${errors.studyDuration ? 'border-red-300 bg-red-50' : 'border-gray-300'}
               `}
+              placeholder="Minutes"
             />
             {errors.studyDuration && (
               <p className="text-xs text-red-600 mt-1">{errors.studyDuration}</p>
@@ -94,7 +83,6 @@ const TimerSettingsPanel: React.FC<TimerSettingsProps> = ({ className = '', onCl
             <input
               type="number"
               min="1"
-              max="30"
               value={localSettings.shortBreakDuration}
               onChange={e =>
                 handleSettingChange('shortBreakDuration', parseInt(e.target.value) || 5)
@@ -103,6 +91,7 @@ const TimerSettingsPanel: React.FC<TimerSettingsProps> = ({ className = '', onCl
                 w-full px-3 py-2 border rounded-lg text-center font-mono
                 ${errors.shortBreakDuration ? 'border-red-300 bg-red-50' : 'border-gray-300'}
               `}
+              placeholder="Minutes"
             />
             {errors.shortBreakDuration && (
               <p className="text-xs text-red-600 mt-1">{errors.shortBreakDuration}</p>
@@ -113,8 +102,7 @@ const TimerSettingsPanel: React.FC<TimerSettingsProps> = ({ className = '', onCl
             <label className="block text-sm font-medium text-gray-700 mb-2">Long Break</label>
             <input
               type="number"
-              min="5"
-              max="60"
+              min="1"
               value={localSettings.longBreakDuration}
               onChange={e =>
                 handleSettingChange('longBreakDuration', parseInt(e.target.value) || 15)
@@ -123,6 +111,7 @@ const TimerSettingsPanel: React.FC<TimerSettingsProps> = ({ className = '', onCl
                 w-full px-3 py-2 border rounded-lg text-center font-mono
                 ${errors.longBreakDuration ? 'border-red-300 bg-red-50' : 'border-gray-300'}
               `}
+              placeholder="Minutes"
             />
             {errors.longBreakDuration && (
               <p className="text-xs text-red-600 mt-1">{errors.longBreakDuration}</p>
