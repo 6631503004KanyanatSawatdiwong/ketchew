@@ -446,6 +446,23 @@ app.get('/health', (req, res) => {
   })
 })
 
+// Serve static files from React build (for production)
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+if (process.env.NODE_ENV === 'production') {
+  // Serve static files from the React build
+  app.use(express.static(path.join(__dirname, '../dist')))
+
+  // Serve React app for any non-API routes
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'))
+  })
+}
+
 // Session cleanup interval (every 6 hours instead of every hour)
 setInterval(
   () => {

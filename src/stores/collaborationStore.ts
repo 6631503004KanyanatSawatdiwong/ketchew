@@ -125,7 +125,9 @@ export const useCollaborationStore = create<CollaborationStore>()(
 
     // Connection management with improved stability
     connect: () => {
-      const socket = io('http://localhost:3004', {
+      const serverUrl = import.meta.env.PROD ? window.location.origin : 'http://localhost:3004'
+
+      const socket = io(serverUrl, {
         autoConnect: true,
         reconnection: true,
         reconnectionDelay: 2000, // Start with 2 seconds
