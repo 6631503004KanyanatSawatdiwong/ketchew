@@ -28,9 +28,9 @@ const SoundSelector: React.FC = () => {
 
   const getSoundIcon = (sound: SoundOption) => {
     if (sound.id === 'rain') return '🌧️'
-    if (sound.id === 'stream') return '🏞️'
-    if (sound.id === 'ocean') return '🌊'
-    if (sound.id === 'forest') return '🌲'
+    if (sound.id === 'wind') return '🌲'
+    if (sound.id === 'night') return '🌙'
+    if (sound.id === 'whitenoise') return '🔊'
     return '🎵'
   }
 

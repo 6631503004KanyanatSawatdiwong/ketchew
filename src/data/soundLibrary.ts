@@ -8,26 +8,42 @@ import { SoundOption } from '../types'
  * - Regular URLs are played through Howler.js
  *
  * Procedural sounds (generated using Web Audio API):
- * - 'procedural-rain': Natural rain ambience with gentle droplets and organic surface sounds
- * - 'procedural-forest': Forest ambience with birds and wind
- * - 'procedural-ocean': Gentle waves meeting shore with water retreat and sand textures
+ * - 'procedural-rain': Light drizzle ambience with sparse gentle droplets and subtle atmosphere
+ * - 'procedural-wind': Gentle wind sounds with natural ambient atmosphere
+ * - 'procedural-night': Pure quiet night atmosphere with gentle night air sounds
+ * - 'procedural-whitenoise': Balanced white noise with equal high and low frequencies
  */
 export const SOUND_LIBRARY: SoundOption[] = [
-  {
-    id: 'ocean',
-    name: 'Ocean',
-    category: 'nature',
-    url: 'procedural-ocean',
-    description:
-      'Continuous shore waves optimized for Pomodoro focus with extended wave patterns and gentle rhythm',
-  },
   {
     id: 'rain',
     name: 'Rain',
     category: 'nature',
     url: 'procedural-rain',
     description:
-      'Natural rain ambience with gentle droplets, organic surface sounds, and subtle atmospheric depth',
+      'Light drizzle ambience with sparse gentle droplets and subtle atmospheric depth, perfect for focus',
+  },
+  {
+    id: 'wind',
+    name: 'Wind in Trees',
+    category: 'ambient',
+    url: 'procedural-wind',
+    description: 'Gentle wind sounds with natural ambient atmosphere for peaceful focus',
+  },
+  {
+    id: 'night',
+    name: 'Night Ambience',
+    category: 'nature',
+    url: 'procedural-night',
+    description:
+      'Pure quiet night atmosphere with gentle night air sounds for deep focus and tranquility',
+  },
+  {
+    id: 'whitenoise',
+    name: 'White Noise',
+    category: 'ambient',
+    url: 'procedural-whitenoise',
+    description:
+      'Balanced white noise with equal high and low frequencies for consistent background sound',
   },
 ]
 

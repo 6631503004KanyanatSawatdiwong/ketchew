@@ -16,12 +16,12 @@ export const testProceduralSounds = async () => {
     await generator.generateRainSound()
     console.log('✅ Multi-layered rain sound started successfully')
 
-    // Wait 5 seconds then test ocean
+    // Wait 5 seconds then test stream
     setTimeout(async () => {
-      console.log('Testing Ocean Sound...')
+      console.log('Testing Stream Sound...')
       try {
-        await generator.generateOceanSound()
-        console.log('✅ Ocean sound started successfully')
+        await generator.generateStreamSound()
+        console.log('✅ Stream sound started successfully')
 
         // Stop after 5 seconds
         setTimeout(() => {
@@ -29,7 +29,7 @@ export const testProceduralSounds = async () => {
           console.log('✅ All sounds stopped')
         }, 5000)
       } catch (error) {
-        console.error('❌ Ocean sound test failed:', error)
+        console.error('❌ Stream sound test failed:', error)
       }
     }, 5000)
   } catch (error) {

@@ -345,96 +345,6 @@ export class ProceduralSoundGenerator {
     return 'procedural-night'
   }
 
-  async generateWhiteNoiseSound(): Promise<string> {
-    await this.ensureAudioContext()
-    if (!this.audioContext || !this.masterGain) {
-      throw new Error('Audio context not available')
-    }
-
-    this.stopAll()
-
-    // Create balanced white noise with multiple frequency bands
-    const noiseBuffer = this.createNoiseBuffer(4)
-    if (!noiseBuffer) throw new Error('Failed to create noise buffer')
-
-    // Low frequency band (20-200 Hz)
-    const lowSource = this.audioContext.createBufferSource()
-    lowSource.buffer = noiseBuffer
-    lowSource.loop = true
-
-    const lowFilter = this.audioContext.createBiquadFilter()
-    lowFilter.type = 'lowpass'
-    lowFilter.frequency.value = 200
-    lowFilter.Q.value = 0.7
-
-    const lowGain = this.audioContext.createGain()
-    lowGain.gain.value = 0.15 // Balanced low frequency volume
-
-    // Mid frequency band (200-2000 Hz)
-    const midSource = this.audioContext.createBufferSource()
-    midSource.buffer = noiseBuffer
-    midSource.loop = true
-
-    const midFilter = this.audioContext.createBiquadFilter()
-    midFilter.type = 'bandpass'
-    midFilter.frequency.value = 1000
-    midFilter.Q.value = 0.5
-
-    const midGain = this.audioContext.createGain()
-    midGain.gain.value = 0.12 // Balanced mid frequency volume
-
-    // High frequency band (2000-10000 Hz)
-    const highSource = this.audioContext.createBufferSource()
-    highSource.buffer = noiseBuffer
-    highSource.loop = true
-
-    const highFilter = this.audioContext.createBiquadFilter()
-    highFilter.type = 'highpass'
-    highFilter.frequency.value = 2000
-    highFilter.Q.value = 0.7
-
-    const highGain = this.audioContext.createGain()
-    highGain.gain.value = 0.1 // Slightly lower high frequency to avoid harshness
-
-    // Connect low frequency chain
-    lowSource.connect(lowFilter)
-    lowFilter.connect(lowGain)
-    lowGain.connect(this.masterGain)
-
-    // Connect mid frequency chain
-    midSource.connect(midFilter)
-    midFilter.connect(midGain)
-    midGain.connect(this.masterGain)
-
-    // Connect high frequency chain
-    highSource.connect(highFilter)
-    highFilter.connect(highGain)
-    highGain.connect(this.masterGain)
-
-    // Start all sources
-    lowSource.start()
-    midSource.start()
-    highSource.start()
-
-    // Add subtle volume variations for more natural white noise
-    this.addWhiteNoiseVariations(lowGain, midGain, highGain)
-
-    this.activeNodes.push(
-      lowSource,
-      lowFilter,
-      lowGain,
-      midSource,
-      midFilter,
-      midGain,
-      highSource,
-      highFilter,
-      highGain
-    )
-
-    this.isPlaying = true
-    return 'procedural-whitenoise'
-  }
-
   async generateStreamSound(): Promise<string> {
     await this.ensureAudioContext()
     if (!this.audioContext || !this.masterGain) {
@@ -700,31 +610,6 @@ export class ProceduralSoundGenerator {
     }
 
     setTimeout(drizzleVariation, 3000)
-  }
-
-  private addWhiteNoiseVariations(lowGain: GainNode, midGain: GainNode, highGain: GainNode) {
-    if (!this.audioContext) return
-
-    const whiteNoiseVariation = () => {
-      if (!this.isPlaying) return
-
-      // Very subtle variations to make white noise more natural
-      const lowTarget = 0.13 + Math.random() * 0.04 // 0.13-0.17
-      const midTarget = 0.1 + Math.random() * 0.04 // 0.10-0.14
-      const highTarget = 0.08 + Math.random() * 0.04 // 0.08-0.12
-
-      const duration = 12 + Math.random() * 8 // 12-20 seconds (very slow changes)
-
-      lowGain.gain.linearRampToValueAtTime(lowTarget, this.audioContext!.currentTime + duration)
-
-      midGain.gain.linearRampToValueAtTime(midTarget, this.audioContext!.currentTime + duration)
-
-      highGain.gain.linearRampToValueAtTime(highTarget, this.audioContext!.currentTime + duration)
-
-      setTimeout(whiteNoiseVariation, (duration + Math.random() * 5) * 1000)
-    }
-
-    setTimeout(whiteNoiseVariation, 5000)
   }
 
   private addCafeChatter() {

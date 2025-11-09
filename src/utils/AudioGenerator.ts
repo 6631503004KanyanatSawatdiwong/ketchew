@@ -96,11 +96,14 @@ export class AudioGenerator {
         case 'procedural-rain':
           result = await this.proceduralGenerator.generateRainSound()
           break
-        case 'procedural-forest':
-          result = await this.proceduralGenerator.generateForestSound()
+        case 'procedural-wind':
+          result = await this.proceduralGenerator.generateCafeSound()
           break
-        case 'procedural-ocean':
-          result = await this.proceduralGenerator.generateOceanSound()
+        case 'procedural-night':
+          result = await this.proceduralGenerator.generateNightSound()
+          break
+        case 'procedural-whitenoise':
+          result = await this.proceduralGenerator.generateWhiteNoiseSound()
           break
 
         default:
