@@ -9,14 +9,22 @@ const SoundSelector: React.FC = () => {
   const [failedSounds, setFailedSounds] = useState<Set<string>>(new Set())
   const [audioGenerator, setAudioGenerator] = useState<AudioGenerator | null>(null)
 
-  // Cleanup audio when component unmounts
+  // Check if audio is currently playing when component mounts and restore state
   useEffect(() => {
-    return () => {
-      if (audioGenerator) {
-        audioGenerator.stop()
+    const generator = getAudioGenerator()
+    if (generator.isPlaying()) {
+      setAudioGenerator(generator)
+      // Try to determine which sound is playing from localStorage or other method
+      const lastSelectedSound = localStorage.getItem('ketchew-selected-sound')
+      if (lastSelectedSound) {
+        setSelectedSound(lastSelectedSound)
       }
     }
-  }, [audioGenerator])
+  }, [])
+
+  // Note: We don't stop audio when component unmounts
+  // The sound should continue playing when the popup is closed
+  // Audio is only stopped when user explicitly toggles the sound off
 
   const getSoundIcon = (sound: SoundOption) => {
     if (sound.id === 'rain') return '🌧️'
@@ -40,6 +48,7 @@ const SoundSelector: React.FC = () => {
     if (selectedSound === soundId) {
       console.log('🔄 Turning off current sound')
       setSelectedSound(null)
+      localStorage.removeItem('ketchew-selected-sound')
       return
     }
 
@@ -62,6 +71,7 @@ const SoundSelector: React.FC = () => {
         setLoadingSound(null)
         setSelectedSound(soundId)
         setAudioGenerator(generator)
+        localStorage.setItem('ketchew-selected-sound', soundId)
         console.log('Sound played successfully:', sound.name)
       } else {
         console.error('Sound failed to play:', sound.name)
@@ -75,47 +85,9 @@ const SoundSelector: React.FC = () => {
     }
   }
 
-  // Simple test beep function
-  const playTestBeep = async () => {
-    console.log('🧪 Testing audio...')
-
-    // Stop any current sound first
-    if (audioGenerator) {
-      audioGenerator.stop()
-      setAudioGenerator(null)
-    }
-    setSelectedSound(null)
-
-    try {
-      const generator = getAudioGenerator()
-      // Use embedded test beep (not from sound library)
-      const testBeepUrl =
-        'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt555NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBzyO1fLNeSsFJHfH8N2QQAoUXrTp66hVFApGn+DyvGccBz'
-
-      console.log('🔊 Playing test beep (embedded audio)...')
-      const result = await generator.playSound(testBeepUrl)
-      console.log('🔊 Test beep result:', result)
-    } catch (error) {
-      console.error('❌ Test beep failed:', error)
-    }
-  }
-
   return (
     <div className="w-full h-full flex flex-col p-3">
       <h2 className="text-lg font-semibold mb-3 text-gray-800 flex-shrink-0">Ambient Sounds</h2>
-
-      {/* Test Audio Button */}
-      <div className="mb-3 flex-shrink-0">
-        <button
-          onClick={playTestBeep}
-          className="w-full px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg transition-colors"
-        >
-          🔊 Test Audio
-        </button>
-        <p className="text-xs text-gray-500 mt-1">
-          Click to test if audio is working on your device
-        </p>
-      </div>
 
       {/* Sound List */}
       <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-1">

@@ -35,7 +35,7 @@ npm run dev
 - **Todo List**: Add, edit, delete, and mark tasks as complete with progress tracking
 - **Session Notes**: Auto-saving text editor with word count and download options
 - **Background Selector**: Choose from nature, abstract, minimal, and workspace backgrounds
-- **Sound Settings**: Background sounds and notification preferences (UI ready for Howler.js)
+- **Sound Settings**: Background sounds with procedural generation (Rain, Forest, Cafe) and notification preferences
 - **Popup Interface**: Clean modal-based navigation between features
 - **Local Storage**: Persistent data for timer settings, todos, and preferences
 - **Session Storage**: Temporary storage for notes (cleared when tab closes)
@@ -101,9 +101,15 @@ src/
 
 ### MVP Limitations
 
-- Audio playback simulated (console logs) - Howler.js integration pending
 - External image URLs may require CORS handling in production
 - Session storage used for notes (temporary by design)
+
+### New Features
+
+- **Procedural Sound Generation**: Multi-layered rain, forest, cafe, and ocean sounds generated using Web Audio API for realistic ambient audio without external files
+- **Enhanced Audio System**: Dual audio system supporting both Howler.js for URL-based sounds and Web Audio API for procedural generation
+- **Focus-Optimized Shore Sounds**: Ocean sound designed for Pomodoro sessions with extended wave patterns, continuous ambience, and longer intervals for sustained concentration
+- **Natural Rain Ambience**: Organic rain sound with gentle droplets, natural surface interactions, and smooth atmospheric flow without robotic elements
 
 ### Production Roadiness
 

@@ -1,12 +1,33 @@
 import { SoundOption } from '../types'
 
+/**
+ * Sound Library for Ketchew Pomodoro Timer
+ *
+ * Supports both URL-based and procedural sounds:
+ * - URLs starting with 'procedural-' trigger the ProceduralSoundGenerator
+ * - Regular URLs are played through Howler.js
+ *
+ * Procedural sounds (generated using Web Audio API):
+ * - 'procedural-rain': Natural rain ambience with gentle droplets and organic surface sounds
+ * - 'procedural-forest': Forest ambience with birds and wind
+ * - 'procedural-ocean': Gentle waves meeting shore with water retreat and sand textures
+ */
 export const SOUND_LIBRARY: SoundOption[] = [
   {
     id: 'ocean',
-    name: ' Ocean',
+    name: 'Ocean',
     category: 'nature',
-    url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
-    description: 'Peaceful ocean waves on the shore',
+    url: 'procedural-ocean',
+    description:
+      'Continuous shore waves optimized for Pomodoro focus with extended wave patterns and gentle rhythm',
+  },
+  {
+    id: 'rain',
+    name: 'Rain',
+    category: 'nature',
+    url: 'procedural-rain',
+    description:
+      'Natural rain ambience with gentle droplets, organic surface sounds, and subtle atmospheric depth',
   },
 ]
 
@@ -21,13 +42,4 @@ export const getSoundById = (id: string): SoundOption | undefined => {
 
 export const getAllCategories = (): string[] => {
   return [...new Set(SOUND_LIBRARY.map(sound => sound.category))]
-}
-
-// Test sound option for debugging
-export const TEST_BEEP: SoundOption = {
-  id: 'test-beep',
-  name: '🔊 Test Beep',
-  category: 'notification',
-  url: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTr7KNUEQxKn+PyvmAcCEOa3/LNeSsFJHfI7+GQQAoUXrTq7aJUEAxLoeL0wGIdBkCY3PLOeCkFJnbH8N+PQAkUXbTq7qBUEAxMn+H0wGIdBkCY3PLOeSsFJHbI8N2PQAkUXbTr7qBTEAxMn+H0wGIdBkKU3PLOeSsFJHbI8N2PQAkUXbTr7qBTEAxMn+H0wGIdBkKU3PLOeSsFJHbI8N2PQAkUXbTr7qBTEAxMn+H0wGIdBkKU3PLOeSsFJHbI8N2PQAkUXbTr7qBTEAxMn+H0wGIdBkKU3PLOeSsFJHbI8N2PQAkUXbTr7qBTEAxMn+H0wGEdBkKU3PLOeSsFJHbI8N2PQAkUXbTr7qBTEAxMn+H0wGEdBkKU3PLOeSsFJHbI8N2PQAkUXbTr7qBTEAxMn+H0wGEdBkKU3PLOeSsFJHbI8N2PQAkUXbTr7qBTEAxMn+H0wGEdBkKU3PLOeSsFJHbI8N2PQAkUXbTr7qBTEAxMn+H0wGEdBkKU3PLOeSsFJHbI8N2PQAkUXbTr7qBTEAxMn+H0wGEdBkKU3PLOeSsFJHbI8N2PQAkUXbTr7qBTEAxMn+H0wGEdBkKU3PLOeSsFJHbI8N2PQAkUXbTr7qBTEAxMn+H0wGEdBkKU3PLOeSsFJHbI8N2PQAkUXbTr7qBTEAxMn+H0wGEdBkKU3PLOeSsFJHbI8N2PQAkUXbTr7qBTEAxMn+H0wGEdBkKU3PLOeSsFJHbI8N2PQAkUXbTr7qBTEAxMn+H0wGEdBkKU3PLOeSsFJHbI8N2PQAkUXbTr7qBTEAxMn+H0wGEdBkKU3PLOeSsFJHbI8N2PQAkUXbTr7qBTEAxMn+H0wGEdBkOTl7',
-  description: 'Quick test beep for audio system debugging',
 }
