@@ -44,14 +44,31 @@ const PopupManager: React.FC<PopupManagerProps> = ({ onPopupStateChange }) => {
   }, [])
 
   const calculateCascadePosition = useCallback((index: number) => {
-    const baseX = 100
-    const baseY = 100
     const offset = 30
 
-    return {
-      x: baseX + index * offset,
-      y: baseY + index * offset,
+    let x
+    let y
+
+    if (index === 0) {
+      const TIMER_WIDTH = 484
+      const TIMER_HEIGHT = 250
+      const SIDEBAR_WIDTH = 110
+      const contentWidth = window.innerWidth - SIDEBAR_WIDTH
+
+      x = SIDEBAR_WIDTH + (contentWidth / 2 - TIMER_WIDTH / 2)
+      y = window.innerHeight / 14 - TIMER_HEIGHT / 14
+
+      x = Math.max(SIDEBAR_WIDTH, x)
+      y = Math.max(0, y)
+    } else {
+      const baseX = 100
+      const baseY = 100
+
+      x = baseX + index * offset
+      y = baseY + index * offset
     }
+
+    return { x, y }
   }, [])
 
   const openPopup = useCallback(

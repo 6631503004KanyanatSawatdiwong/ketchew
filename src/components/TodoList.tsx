@@ -359,8 +359,7 @@ const TodoList: React.FC = () => {
             </div>
             <button
               onClick={addTodo}
-              className="btn-primary flex items-center gap-2 px-4 h-8 text-sm"
-              disabled={!newTodo.trim()}
+              className="bg-red-500 hover:bg-red-600 text-white flex items-center gap-2 px-4 h-8 text-sm rounded-lg"
             >
               <Plus size={16} />
               Add

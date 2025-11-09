@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { X, Video } from 'lucide-react'
+import { X } from 'lucide-react'
 import { useCollaborationStore } from '../stores/collaborationStore'
 
 interface CreateSessionModalProps {
@@ -163,10 +163,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({ isOpen, 
                 Creating...
               </>
             ) : (
-              <>
-                <Video className="w-4 h-4" />
-                Create Session
-              </>
+              <>Create Session</>
             )}
           </button>
         </div>
